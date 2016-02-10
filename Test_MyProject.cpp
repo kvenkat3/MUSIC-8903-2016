@@ -8,25 +8,25 @@
 
 #include "Synthesis.h"
 #include "Vector.h"
-#include "CombFilterIf.h"
+#include "MyProject.h"
 
 SUITE(Vibrato)
 {
-    struct CombFilterData
+    struct VibData
     {
-        CombFilterData() :
-        m_pCombFilter(0),
+        VibData() :
+        m_pMyProject(0),
         m_ppfInputData(0),
         m_ppfOutputData(0),
-        m_iDataLength(35131),
-        m_fMaxDelayLength(3.F),
-        m_iBlockLength(171),
-        m_iNumChannels(3),
+        m_iDataLength(100),
+        m_fMaxDelayLength(441),
+        m_iBlockLength(512),
+        m_iNumChannels(1),
         m_fSampleRate(8000),
-        m_fDelay(.1F),
-        m_fGain(.5F)
+        m_fDepth(.1),
+        m_fFreq(50)
         {
-            CCombFilterIf::create(m_pCombFilter);
+            CMyProject::create(m_pMyProject);
             
             m_ppfInputData  = new float*[m_iNumChannels];
             m_ppfOutputData = new float*[m_iNumChannels];
@@ -37,10 +37,11 @@ SUITE(Vibrato)
                 m_ppfInputData[i]   = new float [m_iDataLength];
                 CVectorFloat::setZero(m_ppfInputData[i], m_iDataLength);
                 m_ppfOutputData[i]  = new float [m_iDataLength];
-                CVectorFloat::setZero(m_ppfOutputData[i], m_iDataLength);            }
+                CVectorFloat::setZero(m_ppfOutputData[i], m_iDataLength);
+            }
         }
         
-        ~CombFilterData()
+        ~VibData()
         {
             for (int i = 0; i < m_iNumChannels; i++)
             {
@@ -52,7 +53,7 @@ SUITE(Vibrato)
             delete [] m_ppfOutputData;
             delete [] m_ppfInputData;
             
-            CCombFilterIf::destroy(m_pCombFilter);
+            CMyProject::destroy(m_pMyProject);
         }
         
         void TestProcess()
@@ -67,7 +68,7 @@ SUITE(Vibrato)
                     m_ppfInputTmp[c]    = &m_ppfInputData[c][m_iDataLength - iNumFramesRemaining];
                     m_ppfOutputTmp[c]   = &m_ppfOutputData[c][m_iDataLength - iNumFramesRemaining];
                 }
-                m_pCombFilter->process(m_ppfInputTmp, m_ppfOutputTmp, iNumFrames);
+                m_pMyProject->process(m_ppfInputTmp, m_ppfOutputTmp, iNumFrames);
                 
                 iNumFramesRemaining -= iNumFrames;
             }
@@ -83,7 +84,7 @@ SUITE(Vibrato)
                 {
                     m_ppfInputTmp[c]    = &m_ppfInputData[c][m_iDataLength - iNumFramesRemaining];
                 }
-                m_pCombFilter->process(m_ppfInputTmp, m_ppfInputTmp, iNumFrames);
+                m_pMyProject->process(m_ppfInputTmp, m_ppfInputTmp, iNumFrames);
                 
                 iNumFramesRemaining -= iNumFrames;
             }
@@ -91,7 +92,7 @@ SUITE(Vibrato)
         
         
         
-        CCombFilterIf  *m_pCombFilter;
+        CMyProject  *m_pMyProject;
         float       **m_ppfInputData,
         **m_ppfOutputData,
         **m_ppfInputTmp,
@@ -101,66 +102,22 @@ SUITE(Vibrato)
         int     m_iBlockLength;
         int     m_iNumChannels;
         float   m_fSampleRate;
-        float   m_fDelay,
-        m_fGain;
+        float   m_fDelay;
+        float   m_fDepth;
+        float   m_fFreq;
         
     };
     
-    TEST_FIXTURE(CombFilterData, ZeroInput)
+    TEST_FIXTURE(VibData, ZeroInput)
     {
-        //FIR
-        m_pCombFilter->init(CCombFilterIf::kCombFIR, m_fMaxDelayLength, m_fSampleRate, m_iNumChannels);
-        m_pCombFilter->setParam(CCombFilterIf::kParamGain, m_fGain);
-        m_pCombFilter->setParam(CCombFilterIf::kParamDelay, m_fDelay);
-        
-        TestProcess();
-        
-        for (int c = 0; c < m_iNumChannels; c++)
-            CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
-        
-        m_pCombFilter->reset();
-        
-        //IIR
-        m_pCombFilter->init(CCombFilterIf::kCombIIR, m_fMaxDelayLength, m_fSampleRate, m_iNumChannels);
-        m_pCombFilter->setParam(CCombFilterIf::kParamGain, m_fGain);
-        m_pCombFilter->setParam(CCombFilterIf::kParamDelay, m_fDelay);
-        
+        m_pMyProject->init(m_iNumChannels, m_fSampleRate, m_fMaxDelayLength, m_fFreq, m_fDepth);
+ 
         TestProcess();
         
         for (int c = 0; c < m_iNumChannels; c++)
             CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
     }
     
-    TEST_FIXTURE(CombFilterData, FirCancellation)
-    {
-        m_pCombFilter->init(CCombFilterIf::kCombFIR, m_fMaxDelayLength, m_fSampleRate, m_iNumChannels);
-        m_pCombFilter->setParam(CCombFilterIf::kParamGain, m_fGain);
-        m_pCombFilter->setParam(CCombFilterIf::kParamDelay, m_fDelay);
-        
-        // full period length
-        for (int c = 0; c < m_iNumChannels; c++)
-            CSynthesis::generateSine (m_ppfInputData[c], 1.F/m_fDelay, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c*M_PI_2));
-        m_pCombFilter->setParam(CCombFilterIf::kParamGain, -1.F);
-        
-        TestProcess();
-        
-        for (int c = 0; c < m_iNumChannels; c++)
-            for (int i = static_cast<int>(m_fDelay*m_fSampleRate+.5F); i < m_iDataLength; i++)
-                CHECK_CLOSE(0.F, m_ppfOutputData[c][i], 1e-3F);
-        
-        // half period length
-        m_pCombFilter->reset();
-        for (int c = 0; c < m_iNumChannels; c++)
-            CSynthesis::generateSine (m_ppfInputData[c], .5F/m_fDelay, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c*M_PI_2));
-        m_pCombFilter->setParam(CCombFilterIf::kParamGain, 1.F);
-        m_pCombFilter->setParam(CCombFilterIf::kParamDelay, m_fDelay);
-        
-        TestProcess();
-        
-        for (int c = 0; c < m_iNumChannels; c++)
-            for (int i = static_cast<int>(m_fDelay*m_fSampleRate+.5F); i < m_iDataLength; i++)
-                CHECK_CLOSE(0.F, m_ppfOutputData[c][i], 1e-3F);
-    }
   
 }
 

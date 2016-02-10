@@ -138,9 +138,7 @@ public:
         
         setReadIdx(w);
         float res = get(-delay-1)*(f) + get(-delay)*(1.-f);
-        
-        //float res = get(-delay-1);
-        
+                
         return res;
     }
     
