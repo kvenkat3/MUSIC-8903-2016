@@ -12,19 +12,19 @@
 
 SUITE(Vibrato)
 {
-    struct VibData
+    struct VibratoData
     {
-        VibData() :
+        VibratoData() :
         m_pMyProject(0),
         m_ppfInputData(0),
         m_ppfOutputData(0),
-        m_iDataLength(100),
-        m_fMaxDelayLength(441),
-        m_iBlockLength(512),
-        m_iNumChannels(1),
+        m_iDataLength(35131),
+        m_fMaxDelayLength(3.F),
+        m_iBlockLength(171),
+        m_iNumChannels(3),
         m_fSampleRate(8000),
-        m_fDepth(.1),
-        m_fFreq(50)
+        m_fFreq(50),
+        m_fDepth(.1F)
         {
             CMyProject::create(m_pMyProject);
             
@@ -37,11 +37,10 @@ SUITE(Vibrato)
                 m_ppfInputData[i]   = new float [m_iDataLength];
                 CVectorFloat::setZero(m_ppfInputData[i], m_iDataLength);
                 m_ppfOutputData[i]  = new float [m_iDataLength];
-                CVectorFloat::setZero(m_ppfOutputData[i], m_iDataLength);
-            }
+                CVectorFloat::setZero(m_ppfOutputData[i], m_iDataLength);            }
         }
         
-        ~VibData()
+        ~VibratoData()
         {
             for (int i = 0; i < m_iNumChannels; i++)
             {
@@ -102,22 +101,20 @@ SUITE(Vibrato)
         int     m_iBlockLength;
         int     m_iNumChannels;
         float   m_fSampleRate;
-        float   m_fDelay;
-        float   m_fDepth;
         float   m_fFreq;
+        float   m_fDepth;
         
     };
     
-    TEST_FIXTURE(VibData, ZeroInput)
+    TEST_FIXTURE(VibratoData, ZeroInput)
     {
         m_pMyProject->init(m_iNumChannels, m_fSampleRate, m_fMaxDelayLength, m_fFreq, m_fDepth);
- 
+        
         TestProcess();
         
         for (int c = 0; c < m_iNumChannels; c++)
             CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
     }
-    
   
 }
 

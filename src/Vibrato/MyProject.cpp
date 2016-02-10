@@ -21,7 +21,7 @@ CMyProject::CMyProject ()
 
 CMyProject::~CMyProject ()
 {
-    this->reset ();
+   // this->reset ();
 }
 
 const int  CMyProject::getVersion (const Version_t eVersionIdx)

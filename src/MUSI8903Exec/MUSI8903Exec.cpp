@@ -14,6 +14,9 @@ using std::endl;
 // local function declarations
 void    showClInfo ();
 
+
+//CHANGE depth to seconds. MAYBE (from 0-1)
+
 /////////////////////////////////////////////////////////////////////////////////
 // main function
 int main(int argc, char* argv[])
