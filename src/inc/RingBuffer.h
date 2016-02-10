@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <cmath>
 
+/*! \brief implement a circular buffer of type T
+*/
 template <class T> 
 class CRingBuffer
 {
@@ -28,7 +30,7 @@ public:
     }
 
     /*! add a new value of type T to write index and increment write index
-    \param T tNewValue the new value
+    \param tNewValue the new value
     \return void
     */
     void putPostInc (T tNewValue)
@@ -38,8 +40,8 @@ public:
     }
 
     /*! add new values of type T to write index and increment write index
-    \param const T * ptNewBuff: new values
-    \param int iLength: number of values
+    \param ptNewBuff: new values
+    \param iLength: number of values
     \return void
     */
     void putPostInc (const T* ptNewBuff, int iLength)
@@ -49,7 +51,7 @@ public:
     }
 
     /*! add a new value of type T to write index
-    \param T tNewValue the new value
+    \param tNewValue the new value
     \return void
     */
     void put(T tNewValue)
@@ -58,8 +60,8 @@ public:
     }
 
     /*! add new values of type T to write index
-    \param const T * ptNewBuff: new values
-    \param int iLength: number of values
+    \param ptNewBuff: new values
+    \param iLength: number of values
     \return void
     */
     void put(const T* ptNewBuff, int iLength)
@@ -85,8 +87,8 @@ public:
     }
 
     /*! return the values starting at the current read index and increment the read pointer
-    \param T * ptBuff: pointer to where the values will be written
-    \param int iLength: number of values
+    \param ptBuff: pointer to where the values will be written
+    \param iLength: number of values
     \return void
     */
     void getPostInc (T* ptBuff, int iLength)
@@ -96,7 +98,7 @@ public:
     }
 
     /*! return the value at the current read index
-    \param int iOffset: read at offset from read index
+    \param iOffset: read at offset from read index
     \return float the value from the read index
     */
     T get (int iOffset = 0) const
@@ -111,8 +113,8 @@ public:
     }
 
     /*! return the values starting at the current read index
-    \param T * ptBuffpointer to where the values will be written
-    \param int iLength: number of values
+    \param ptBuff to where the values will be written
+    \param iLength: number of values
     \return void
     */
     void get (T* ptBuff, int iLength) const
@@ -146,7 +148,7 @@ public:
     }
 
     /*! move the write index to a new position
-    \param int iNewWriteIdx: new position
+    \param iNewWriteIdx: new position
     \return void
     */
     void setWriteIdx (int iNewWriteIdx)
@@ -163,7 +165,7 @@ public:
     }
 
     /*! move the read index to a new position
-    \param int iNewReadIdx: new position
+    \param iNewReadIdx: new position
     \return void
     */
     void setReadIdx (int iNewReadIdx)

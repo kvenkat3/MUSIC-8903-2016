@@ -8,6 +8,8 @@
 #include "ErrorDef.h"
 #include "Util.h"
 
+/*! \brief class with static functions for signal generation
+*/
 class CSynthesis
 {
 public:

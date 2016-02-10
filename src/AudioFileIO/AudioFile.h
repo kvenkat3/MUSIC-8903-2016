@@ -5,7 +5,7 @@
 
 #define WITH_SNDLIB
 
-/*! \class open, read, and write raw audio files in 16 bit integer little endian format.
+/*! \brief open, read, and write raw audio files in 16 bit integer little endian format.
 */
 class CAudioFileRaw : public CAudioFileIf
 {
@@ -36,7 +36,7 @@ private:
 };
 
 
-/*! \class open, read, and write audio files with sndlib (CMake option WITH_SNDLIB has to be ON)
+/*! \brief open, read, and write audio files with sndlib (CMake option WITH_SNDLIB has to be ON)
 */
 class CAudioFileSndLib : public CAudioFileIf
 {
