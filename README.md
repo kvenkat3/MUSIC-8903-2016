@@ -1,5 +1,6 @@
 # MUSIC-8903-2016
 Repo for the class Audio Software Engineering Spring 2016
+
 1.
 Our process function is not in place. Our modified signal is a separate output. 
 Our code works for all sample rates and channel configurations.
