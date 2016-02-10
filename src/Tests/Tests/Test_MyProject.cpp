@@ -71,24 +71,7 @@ SUITE(Vibrato)
                 
                 iNumFramesRemaining -= iNumFrames;
             }
-        }
-        void TestProcessInplace()
-        {
-            int iNumFramesRemaining = m_iDataLength;
-            while (iNumFramesRemaining > 0)
-            {
-                int iNumFrames = std::min(iNumFramesRemaining, m_iBlockLength);
-                
-                for (int c = 0; c < m_iNumChannels; c++)
-                {
-                    m_ppfInputTmp[c]    = &m_ppfInputData[c][m_iDataLength - iNumFramesRemaining];
-                }
-                m_pMyProject->process(m_ppfInputTmp, m_ppfInputTmp, iNumFrames);
-                
-                iNumFramesRemaining -= iNumFrames;
-            }
-        }
-        
+        }        
         
         
         CMyProject  *m_pMyProject;
@@ -115,6 +98,69 @@ SUITE(Vibrato)
         for (int c = 0; c < m_iNumChannels; c++)
             CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
     }
+    
+    TEST_FIXTURE(VibratoData, ZeroModDepth)
+    {
+        m_pMyProject->init(m_iNumChannels, m_fSampleRate, m_fMaxDelayLength, m_fFreq, 0);
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+            CSynthesis::generateSine (m_ppfInputData[c], 387.F, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c*M_PI_2));
+        
+        TestProcess();
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+            CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
+    }
+    
+    TEST_FIXTURE(VibratoData, ZeroFreq)
+    {
+        m_pMyProject->init(m_iNumChannels, m_fSampleRate, m_fMaxDelayLength, 0, m_fDepth);
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+            CSynthesis::generateSine (m_ppfInputData[c], 387.F, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c*M_PI_2));
+        
+        TestProcess();
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+            CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
+    }
+
+    
+    TEST_FIXTURE(VibratoData, VaryingBlocksize)
+    {
+        m_pMyProject->init(m_iNumChannels, m_fSampleRate, m_fMaxDelayLength, m_fFreq, m_fDepth);
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+            CSynthesis::generateSine (m_ppfInputData[c], 387.F, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c*M_PI_2));
+        
+        TestProcess();
+        
+        m_pMyProject->reset();
+        m_pMyProject->init(m_iNumChannels, m_fSampleRate, m_fMaxDelayLength, m_fFreq, m_fDepth);
+        
+ 
+        {
+            int iNumFramesRemaining = m_iDataLength;
+            while (iNumFramesRemaining > 0)
+            {
+                
+                int iNumFrames = std::min(static_cast<float>(iNumFramesRemaining), static_cast<float>(rand())/RAND_MAX*17000);
+                
+                for (int c = 0; c < m_iNumChannels; c++)
+                {
+                    m_ppfInputTmp[c]    = &m_ppfInputData[c][m_iDataLength - iNumFramesRemaining];
+                }
+                m_pMyProject->process(m_ppfInputTmp, m_ppfInputTmp, iNumFrames);
+                
+                iNumFramesRemaining -= iNumFrames;
+            }
+        }
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+            CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
+
+    }
+    
   
 }
 

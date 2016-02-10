@@ -89,7 +89,7 @@ Error_t CMyProject::init(int numChannels,int sampleRate, int maxDelay, float LFO
     freq = LFOFreq;
     depth = (LFODepth * (maxDelay-1)/2);
     
-    std::cout << depth<< std::endl;
+    //std::cout << depth<< std::endl;
     
     fs = sampleRate;
     
