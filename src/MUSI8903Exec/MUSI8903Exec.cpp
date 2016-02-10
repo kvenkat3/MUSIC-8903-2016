@@ -6,6 +6,8 @@
 
 #include "AudioFileIf.h"
 
+#include "MyProject.h"
+
 using std::cout;
 using std::endl;
 
@@ -29,20 +31,47 @@ int main(int argc, char* argv[])
     std::fstream            hOutputFile;
     CAudioFileIf::FileSpec_t stFileSpec;
 
+    CMyProject              *pMyProject         = 0;
+    
+    float                   **ppfAudioDataOut   = 0;
+    
+    Error_t                 error;
+    
+    float                   LFOFreq             = 0;
+    
+    float                   LFODepth            = 0;
+
     showClInfo ();
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
-    if (argc < 2)
+    if (argc < 4)
     {
         return -1;
     }
     else
     {
         sInputFilePath  = argv[1];
+        LFOFreq         = std::stof(argv[2]);
+        LFODepth        = std::stof(argv[3]);
         sOutputFilePath = sInputFilePath + ".txt";
+        
     }
 
+    if(LFOFreq<0 || LFOFreq>10000)
+    {
+        std::cout << "Frequency out of range 0-10000 Hz" << endl;
+        return -1;
+
+    }
+    
+    if(LFODepth>1 || LFODepth<0)
+    {
+        std::cout << "Depth out of range of 0-1" << endl;
+
+        return -1;
+    }
+    
     //////////////////////////////////////////////////////////////////////////////
     // open the input wave file
     CAudioFileIf::create(phAudioFile);
@@ -68,20 +97,28 @@ int main(int argc, char* argv[])
     ppfAudioData            = new float* [stFileSpec.iNumChannels];
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         ppfAudioData[i] = new float [kBlockSize];
+    
+    ppfAudioDataOut            = new float* [stFileSpec.iNumChannels];
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+        ppfAudioDataOut[i] = new float [kBlockSize];
 
     time                    = clock();
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output file
+    CMyProject::create(pMyProject);
+    pMyProject->init(stFileSpec.iNumChannels, stFileSpec.fSampleRateInHz,stFileSpec.fSampleRateInHz/100, LFOFreq, LFODepth);
     while (!phAudioFile->isEof())
     {
         long long iNumFrames = kBlockSize;
         phAudioFile->readData(ppfAudioData, iNumFrames);
+        
+        error = pMyProject->process(ppfAudioData, ppfAudioDataOut, iNumFrames);
 
         for (int i = 0; i < iNumFrames; i++)
         {
             for (int c = 0; c < stFileSpec.iNumChannels; c++)
             {
-                hOutputFile << ppfAudioData[c][i] << "\t";
+                hOutputFile << ppfAudioDataOut[c][i] << "\t";
             }
             hOutputFile << endl;
         }
@@ -92,12 +129,17 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // clean-up
     CAudioFileIf::destroy(phAudioFile);
+    CMyProject::destroy(pMyProject);
     hOutputFile.close();
 
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         delete [] ppfAudioData[i];
     delete [] ppfAudioData;
-    ppfAudioData = 0;
+    
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+        delete [] ppfAudioDataOut[i];
+    delete [] ppfAudioDataOut;
+    ppfAudioDataOut = 0;
 
     return 0;
     

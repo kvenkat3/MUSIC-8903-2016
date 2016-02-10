@@ -4,6 +4,7 @@
 #include <cassert>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 template <class T> 
 class CRingBuffer
@@ -125,6 +126,20 @@ public:
         memcpy (ptBuff, &m_ptBuff[m_iReadIdx], sizeof(T)*iNumValues2End);
         if ((iLength - iNumValues2End)>0)
             memcpy (&ptBuff[iNumValues2End], m_ptBuff, sizeof(T)*(iLength - iNumValues2End));
+    }
+    
+    float getFracOffset(float delay)
+    {
+        int w = getWriteIdx();
+        int i = (int)delay;
+        float f = delay - i;
+        
+        setReadIdx(w);
+        float res = get(-delay-1)*(f) + get(-delay)*(1.-f);
+        
+        //float res = get(-delay-1);
+        
+        return res;
     }
     
     /*! set buffer content and indices to 0
