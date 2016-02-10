@@ -3,6 +3,8 @@
 
 #include "ErrorDef.h"
 
+/*! \brief base class for the comb filter (FIR & IIR)
+*/
 class CCombFilterBase
 {
 public:
@@ -31,6 +33,8 @@ private:
 };
 
 
+/*! \brief FIR comb filter implementation
+*/
 class CCombFilterFir : public CCombFilterBase
 {
 public:
@@ -40,6 +44,8 @@ public:
     Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames) override;
 };
 
+/*! \brief IIR comb filter implementation
+*/
 class CCombFilterIir : public CCombFilterBase
 {
 public:

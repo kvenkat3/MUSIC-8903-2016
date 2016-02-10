@@ -5,9 +5,15 @@
 #include <cstring>
 #include <limits>
 
+/*! \brief class with static utility functions 
+*/
 class CUtil
 {
 public:
+    /*! converts a float to an int
+    \param fInput float value
+    \return T
+    */
     template<typename T>
     static T float2int (float fInput)
     {
@@ -16,6 +22,10 @@ public:
         else
             return static_cast<T>(fInput - .5F);
     }
+    /*! converts a double to an int
+    \param fInput double value
+    \return T
+    */
     template<typename T>
     static T double2int (double fInput)
     {
@@ -25,11 +35,19 @@ public:
             return static_cast<T>(fInput - .5);
     }
 
+    /*! checks if the input is a power of 2
+    \param n integer value
+    \return bool
+    */
     static bool isPowOf2 (int n) 
     {
         return !(n & (n-1));
     }
 
+    /*! converts an arbitrary integer (positive) to the next larger power of two
+    \param n integer value
+    \return int
+    */
     static int nextPowOf2(int n)
     {
         int iOrder = 0;

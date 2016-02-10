@@ -6,28 +6,47 @@
 #include <limits>
 #include <cmath>
 
+/*! \brief class with static functions for buffer operations with type T
+*/
 class CVector
 {
 public:
+    /*! sets a buffer to zero
+    \param pfSrcDest pointer to memory to be modified
+    \param iLength  buffer length
+    \return void
+    */
     template<typename T>
-    static void setZero (T *pSrcDest, int iLength)
+    static void setZero (T *pfSrcDest, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrcDest);
+        assert (pfSrcDest);
 
         if (iLength > 0)
-            memset (pSrcDest, 0, sizeof(T)*iLength);
+            memset (pfSrcDest, 0, sizeof(T)*iLength);
     }
+    /*! sets all values smaller than a threshold to 0
+    \param pfSrcDest pointer to memory to be modified
+    \param iLength  buffer length
+    \param Thresh threshold value
+    \return void
+    */
     template<typename T>
-    static void setZeroBelowThresh (T *pSrcDest, int iLength, T Thresh)
+    static void setZeroBelowThresh (T *pfSrcDest, int iLength, T Thresh)
     {
         assert (iLength >= 0);
-        assert (pSrcDest);
+        assert (pfSrcDest);
 
         for (int i = 0; i < iLength; i++)
-            if (pSrcDest[i] < Thresh)
-                pSrcDest[i] = 0;
+            if (pfSrcDest[i] < Thresh)
+                pfSrcDest[i] = 0;
     }
+    /*! copies buffer of type T
+    \param pDest pointer to destination memory
+    \param pSource pointer to source memory
+    \param iLength length of buffer
+    \return void
+    */
     template<typename T>
     static void copy(T *pDest, const T *pSource, int iLength)
     {
@@ -40,168 +59,284 @@ public:
             memcpy(pDest, pSource, sizeof(T)*iLength);
         }
     }
+    /*! reverses buffer (last to first element)
+    \param pfSrcDest pointer to memory to be flipped
+    \param iLength number of elements
+    \return void
+    */
     template<typename T>
-    static void flip_I(T *pSrcDest, int iLength)
+    static void flip_I(T *pfSrcDest, int iLength)
     {
         assert(iLength >= 0);
 
         if (iLength > 0)
         {
-            assert(pSrcDest);
+            assert(pfSrcDest);
 
             int iLoopLength = iLength / 2; // integer division!
             for (int i = 0; i < iLoopLength; i++)
             {
-                T Tmp                       = pSrcDest[i];
-                pSrcDest[i]                 = pSrcDest[iLength - 1 - i];
-                pSrcDest[iLength - 1 - i]   = Tmp;
+                T Tmp                       = pfSrcDest[i];
+                pfSrcDest[i]                 = pfSrcDest[iLength - 1 - i];
+                pfSrcDest[iLength - 1 - i]   = Tmp;
             }
         }
     }
+    /*! moves a subset of the current buffer
+    \param pfSrcDest source and destination
+    \param iDestIdx destination index
+    \param iSrcIdx source index
+    \param iLength number of elements to be moved
+    \return void
+    */
     template<typename T>
-    static void moveInMem (T *pSrcDest, int iDestIdx, int iSrcIdx, int iLength)
+    static void moveInMem (T *pfSrcDest, int iDestIdx, int iSrcIdx, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrcDest);
+        assert (pfSrcDest);
 
         if (iLength > 0)
-            memmove (&pSrcDest[iDestIdx], &pSrcDest[iSrcIdx], sizeof(T)*iLength);
+            memmove (&pfSrcDest[iDestIdx], &pfSrcDest[iSrcIdx], sizeof(T)*iLength);
     }
 };
+
+/*! \brief class with static functions for buffer operations with type float
+*/
 class CVectorFloat
 {
 public:
 
+    /*! sets a buffer to zero
+    \param pfSrcDest pointer to memory to be modified
+    \param iLength  buffer length
+    \return void
+    */
     static void setZero (float *pfSrcDest, int iLength)
     {
         CVector::setZero(pfSrcDest, iLength);
     }
+    
+    /*! sets all values smaller than a threshold to 0
+    \param pfSrcDest pointer to memory to be modified
+    \param iLength  buffer length
+    \param fThresh threshold value
+    \return void
+    */
     static void setZeroBelowThresh (float *pfSrcDest, int iLength, float fThresh)
     {
         CVector::setZeroBelowThresh(pfSrcDest, iLength, fThresh);
     }
+
+    /*! copies buffer of type float
+    \param pfDest pointer to destination memory
+    \param pfSource pointer to source memory
+    \param iLength length of buffer
+    \return void
+    */
     static void copy(float *pfDest, const float *pfSource, int iLength)
     {
         CVector::copy(pfDest, pfSource, iLength);
     }
+
+    /*! revferses buffer (last to first element)
+    \param pfSrcDest pointer to memory to be flipped
+    \param iLength number of elements
+    \return void
+    */
     static void flip_I(float *pfSrcDest, int iLength)
     {
         CVector::flip_I(pfSrcDest, iLength);
     }
+
+    /*! moves a subset of the current buffer
+    \param pfSrcDest source and destination
+    \param iDestIdx destination index
+    \param iSrcIdx source index
+    \param iLength number of elements to be moved
+    \return void
+    */
     static void moveInMem (float *pfSrcDest, int iDestIdx, int iSrcIdx, int iLength)
     {
         CVector::moveInMem(pfSrcDest, iDestIdx, iSrcIdx, iLength);
     }
 
-    static void setValue (float *pDest, float fValue, int iLength)
+    /*! initializes the buffer to a specific value
+    \param pfDest pointer to memory to be initialized
+    \param fValue value to use
+    \param iLength number of elements to be set
+    \return void
+    */
+    static void setValue (float *pfDest, float fValue, int iLength)
     {
         assert (iLength >= 0);
-        assert (pDest);
+        assert (pfDest);
 
         for (int i = 0; i < iLength; i++)
-            pDest[i] = fValue;
+            pfDest[i] = fValue;
     }
-    static void mulC_I (float *pSrcDest, float fScale, int iLength)
+
+    /*! multiplies a buffer with a scalar
+    \param pfSrcDest buffer to be multiplied
+    \param fScale scalar
+    \param iLength number of element to be multiplied
+    \return void
+    */
+    static void mulC_I (float *pfSrcDest, float fScale, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrcDest);
+        assert (pfSrcDest);
         
         for (int i = 0; i < iLength; i++)
-            pSrcDest[i] *= fScale;
+            pfSrcDest[i] *= fScale;
     }
 
-    static void mul_I (float *pSrcDest, const float *pSrc, int iLength)
+    /*! element-wise vector multiplication
+    \param pfSrcDest one input and output buffer
+    \param pfSrc second input buffer
+    \param iLength number of element to be multiplied
+    \return void
+    */
+    static void mul_I (float *pfSrcDest, const float *pfSrc, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrcDest);
-        assert (pSrc);
+        assert (pfSrcDest);
+        assert (pfSrc);
 
         for (int i = 0; i < iLength; i++)
-            pSrcDest[i] *= pSrc[i];
+            pfSrcDest[i] *= pfSrc[i];
     }
 
-    static float mulScalar (const float *pSrc1, const float *pSrc2, int iLength)
+    /*! computes the scalar product between two vectors
+    \param pfSrc1 vector one
+    \param pfSrc2 vector two
+    \param iLength number of dimenions
+    \return float
+    */
+    static float mulScalar (const float *pfSrc1, const float *pfSrc2, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrc1);
-        assert (pSrc2);
+        assert (pfSrc1);
+        assert (pfSrc2);
         float  fResult = 0;
 
         for (int i = 0; i < iLength; i++)
-            fResult += pSrc1[i] * pSrc2[i];
+            fResult += pfSrc1[i] * pfSrc2[i];
 
         return fResult;
     }
 
-    static void div_I (float *pSrcDest, const float *pSrc, int iLength)
+    /*! element-wise vector division
+    \param pfSrcDest one input and output buffer
+    \param pfSrc second input buffer
+    \param iLength number of element to be divided
+    \return void
+    */
+    static void div_I (float *pfSrcDest, const float *pfSrc, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrcDest);
-        assert (pSrc);
+        assert (pfSrcDest);
+        assert (pfSrc);
 
         for (int i = 0; i < iLength; i++)
         {
-            assert(pSrc[i] != 0);
-            pSrcDest[i] /= pSrc[i];
+            assert(pfSrc[i] != 0);
+            pfSrcDest[i] /= pfSrc[i];
         }
     }
 
-    static void add_I (float *pSrcDest, const float *pSrc, int iLength)
+    /*! element-wise vector addition
+    \param pfSrcDest one input and output buffer
+    \param pfSrc second input buffer
+    \param iLength number of element to be added
+    \return void
+    */
+    static void add_I (float *pfSrcDest, const float *pfSrc, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrcDest);
-        assert (pSrc);
+        assert (pfSrcDest);
+        assert (pfSrc);
 
         for (int i = 0; i < iLength; i++)
-            pSrcDest[i] += pSrc[i];
+            pfSrcDest[i] += pfSrc[i];
     }
-    static void addC_I (float *pSrcDest, float fScale, int iLength)
+
+    /*! adds a buffer to a scalar
+    \param pfSrcDest buffer to be added
+    \param fScale scalar
+    \param iLength number of element to be added
+    \return void
+    */
+    static void addC_I (float *pfSrcDest, float fScale, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrcDest);
+        assert (pfSrcDest);
 
         for (int i = 0; i < iLength; i++)
-            pSrcDest[i] += fScale;
+            pfSrcDest[i] += fScale;
     }
 
-    static void sub_I (float *pSrcDest, const float *pSrc, int iLength)
+    /*! element-wise vector subtraction
+    \param pfSrcDest one input and output buffer
+    \param pfSrc second input buffer
+    \param iLength number of element to be subtracted
+    \return void
+    */
+    static void sub_I (float *pfSrcDest, const float *pfSrc, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrcDest);
-        assert (pSrc);
+        assert (pfSrcDest);
+        assert (pfSrc);
 
         for (int i = 0; i < iLength; i++)
-            pSrcDest[i] -= pSrc[i];
+            pfSrcDest[i] -= pfSrc[i];
     }
 
-    static float sum (const float *pSrc, int iLength, bool bAbs = false)
+    /*! computes the sum of a vector
+    \param pfSrc vector
+    \param iLength length of vector
+    \param bAbs specifies whether it is the sum of absolute values or not
+    \return float
+    */
+    static float sum (const float *pfSrc, int iLength, bool bAbs = false)
     {
         assert (iLength >= 0);
-        assert (pSrc);
+        assert (pfSrc);
 
         float fResult = 0;
         if (bAbs)
         {
             for (int i = 0; i < iLength; i++)
-                fResult += std::abs(pSrc[i]);
+                fResult += std::abs(pfSrc[i]);
         }
         else
         {
             for (int i = 0; i < iLength; i++)
-                fResult += pSrc[i];
+                fResult += pfSrc[i];
         }
         return fResult;
     }
 
-    static bool isEqual (const float *pSrc1, const float *pSrc2, int iLength)
+    /*! checks to buffer for equality (no floating point tolerance)
+    \param pfSrc1 buffer 1
+    \param pfSrc2 buffer 2
+    \param iLength number of dimensions
+    \return bool
+    */
+    static bool isEqual (const float *pfSrc1, const float *pfSrc2, int iLength)
     {
         assert (iLength >= 0);
-        assert (pSrc1);
-        assert (pSrc2);
+        assert (pfSrc1);
+        assert (pfSrc2);
 
-        return (memcmp (pSrc1, pSrc2, iLength * sizeof(float)) == 0);
+        return (memcmp (pfSrc1, pfSrc2, iLength * sizeof(float)) == 0);
     }
-    static float getMean (float *pfSrc, long long int iLength)
+
+    /*! extracts the mean value
+    \param pfSrc input buffer
+    \param iLength number of elements in buffer
+    \return float
+    */
+    static float getMean (const float *pfSrc, long long int iLength)
     {
         assert (iLength >= 0);
 
@@ -219,7 +354,14 @@ public:
 
         return fMean;
     }
-    static float getStd (float *pfSrc, long long int iLength, float fMean = std::numeric_limits<float>::max())
+
+    /*! extracts the standard deviation (biased) from a buffer
+    \param pfSrc input buffer
+    \param iLength number of elements in buffer
+    \param fMean mean value if it has already been computed, otherwise it will be extracted in function
+    \return float
+    */
+    static float getStd (const float *pfSrc, long long int iLength, float fMean = std::numeric_limits<float>::max())
     {
         assert (iLength >= 0);
 
@@ -243,7 +385,13 @@ public:
 
         return std::sqrt(fStd);
     }
-    static float getRms (float *pfSrc, long long int iLength)
+
+    /*! extracts the root mean square from a buffer
+    \param pfSrc input buffer
+    \param iLength number of elements in buffer
+    \return float
+    */
+    static float getRms (const float *pfSrc, long long int iLength)
     {
         assert (iLength >= 0);
 
@@ -262,7 +410,14 @@ public:
 
         return std::sqrt(fRms);
     }
-    static float getMax (float *pfSrc, long long int iLength, bool bAbs = false)
+
+    /*! finds the maximum (absolute) value in the buffer
+    \param pfSrc input buffer
+    \param iLength number of elements in buffer
+    \param bAbs bool to specify whether we search absolute values
+    \return float
+    */
+    static float getMax (const float *pfSrc, long long int iLength, bool bAbs = false)
     {
         float fMax;
         long long iMax;
@@ -271,6 +426,13 @@ public:
 
         return fMax;
     }
+
+    /*! finds the minimum (absolute) value in the buffer
+    \param pfSrc input buffer
+    \param iLength number of elements in buffer
+    \param bAbs bool to specify whether we search absolute values
+    \return float
+    */
     static float getMin (const float *pfSrc, long long int iLength, bool bAbs = false)
     {
         float fMin;
@@ -280,7 +442,16 @@ public:
 
         return fMin;
     }
-    static void findMax (float *pfSrc, float &fMax, long long &iMax, long long int iLength, bool bAbs = false)
+
+    /*! finds the maximum (absolute) value in the buffer
+    \param pfSrc input buffer
+    \param fMax resulting output value
+    \param iMax index of the resulting output value
+    \param iLength number of elements in buffer
+    \param bAbs bool to specify whether we search absolute values
+    \return float
+    */
+    static void findMax (const float *pfSrc, float &fMax, long long &iMax, long long int iLength, bool bAbs = false)
     {
         assert (iLength >= 0);
         assert (pfSrc);
@@ -299,6 +470,15 @@ public:
             }
         }
     }
+
+    /*! finds the minimum (absolute) value in the buffer
+    \param pfSrc input buffer
+    \param fMin resulting output value
+    \param iMin index of the resulting output value
+    \param iLength number of elements in buffer
+    \param bAbs bool to specify whether we search absolute values
+    \return float
+    */
     static void findMin (const float *pfSrc, float &fMin, long long &iMin, long long int iLength, bool bAbs = false)
     {
         assert (iLength >= 0);

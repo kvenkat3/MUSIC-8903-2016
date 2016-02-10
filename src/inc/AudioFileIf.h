@@ -6,7 +6,7 @@
 #include <algorithm>
 #include "ErrorDef.h"
 
-/*! \class open, read, and write audio files
+/*! \brief open, read, and write audio files
 */
 class CAudioFileIf
 {
@@ -44,25 +44,25 @@ public:
     };
 
     /*! opens a new instance for audio file IO
-    \param CAudioFileIf * & pCInstance
+    \param pCInstance
     \return Error_t
     */
     static Error_t create (CAudioFileIf*& pCInstance);
     /*! destroys and audio file IO instance
-    \param CAudioFileIf * & pCInstance
+    \param pCInstance
     \return Error_t
     */
     static Error_t destroy (CAudioFileIf*& pCInstance);
     /*! reset instance to initial state
-    \param bool bFreeMemory: also free the internal memory if true
+    \param  bFreeMemory: also free the internal memory if true
     \return Error_t
     */
     virtual Error_t reset (bool bFreeMemory = false);
 
     /*! open a file for reading or writing
-    \param std::string cAudioFileName
-    \param FileIoType_t eIoType
-    \param FileSpec_t const * psFileSpec
+    \param cAudioFileName
+    \param eIoType
+    \param psFileSpec
     \return Error_t
     */
     virtual Error_t openFile (std::string cAudioFileName, FileIoType_t eIoType, FileSpec_t const *psFileSpec = 0) = 0;
@@ -72,37 +72,37 @@ public:
     virtual Error_t closeFile () = 0;
 
     /*! read data from file
-    \param float * * ppfAudioData: [channels][iNumFrames]
-    \param int & iNumFrames: number of frames to read (per channel)
+    \param ppfAudioData: [channels][iNumFrames]
+    \param iNumFrames: number of frames to read (per channel)
     \return Error_t
     */
     virtual Error_t readData (float **ppfAudioData, long long int &iNumFrames);
     /*! write data to file
-    \param float * * ppfAudioData: [channels][iNumFrames]
-    \param int iNumFrames: number of frames to write (per channel)
+    \param ppfAudioData: [channels][iNumFrames]
+    \param iNumFrames: number of frames to write (per channel)
     \return Error_t
     */
     virtual Error_t writeData (float **ppfAudioData, long long int iNumFrames);
 
     /*! retrieve file specifications
-    \param FileSpec_t & sFileSpec
+    \param sFileSpec
     \return Error_t
     */
     Error_t getFileSpec (FileSpec_t &sFileSpec);
 
     /*! jump to new position in file
-    \param long long iFrame: frame to jump to
+    \param iFrame: frame to jump to
     \return Error_t
     */
     virtual Error_t setPosition (long long iFrame = 0);
     /*! jump to new position in file
-    \param double dTimeInS: time to jump to
+    \param dTimeInS: time to jump to
     \return Error_t
     */
     Error_t setPosition (double dTimeInS = .0);
 
     /*! enable clipping to avoid wrap-arounds
-    \param bool bIsEnabled
+    \param bIsEnabled
     \return Error_t
     */
     Error_t setClippingEnabled (bool bIsEnabled = true);
@@ -112,22 +112,22 @@ public:
     bool isClippingEnabled () {return m_bWithClipping;};
 
     /*! get current position in file
-    \param long long & iFrame: current frame
+    \param iFrame: current frame
     \return Error_t
     */
     Error_t getPosition (long long &iFrame);
     /*! get current position in file
-    \param double & dTimeInS: current time in seconds
+    \param dTimeInS: current time in seconds
     \return Error_t
     */
     Error_t getPosition (double &dTimeInS);
     /*! get length of file
-    \param long long & iLengthInFrames: file length in frames
+    \param iLengthInFrames: file length in frames
     \return Error_t
     */
     Error_t getLength (long long &iLengthInFrames) ;
     /*! get length of file
-    \param double & dLengthInSeconds: file length in seconds
+    \param dLengthInSeconds: file length in seconds
     \return Error_t
     */
     Error_t getLength (double &dLengthInSeconds) ;
