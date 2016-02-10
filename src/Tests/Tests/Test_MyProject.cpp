@@ -18,13 +18,13 @@ SUITE(Vibrato)
         m_pMyProject(0),
         m_ppfInputData(0),
         m_ppfOutputData(0),
-        m_iDataLength(35131),
+        m_iDataLength(35),
         m_fMaxDelayLength(3.F),
         m_iBlockLength(171),
         m_iNumChannels(3),
-        m_fSampleRate(8000),
+        m_fSampleRate(20000),
         m_fFreq(50),
-        m_fDepth(.1F)
+        m_fDepth(.0001F)
         {
             CMyProject::create(m_pMyProject);
             
@@ -116,13 +116,46 @@ SUITE(Vibrato)
     {
         m_pMyProject->init(m_iNumChannels, m_fSampleRate, m_fMaxDelayLength, 0, m_fDepth);
         
+        int iDelayInSamples = round(m_fDepth*m_fSampleRate);
+        
         for (int c = 0; c < m_iNumChannels; c++)
             CSynthesis::generateSine (m_ppfInputData[c], 387.F, m_fSampleRate, m_iDataLength, .8F, static_cast<float>(c*M_PI_2));
         
         TestProcess();
         
         for (int c = 0; c < m_iNumChannels; c++)
-            CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
+        {
+            for (int i= 0; i < m_iDataLength-iDelayInSamples; i++)
+            {
+                CHECK_CLOSE(m_ppfInputData[c][i], m_ppfOutputData[c][i+iDelayInSamples], 1e-3F);
+                
+            }
+        }
+    }
+    
+    TEST_FIXTURE(VibratoData, DCInput)
+    {
+        m_pMyProject->init(m_iNumChannels, m_fSampleRate, m_fMaxDelayLength, m_fFreq, m_fDepth);
+        
+        int iDelayInSamples = round(m_fDepth*m_fSampleRate);
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+            for (int i= 0; i < m_iDataLength; i++)
+            {
+                m_ppfInputData[c][i] = 1;
+                
+            }
+        
+        TestProcess();
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+        {
+            for (int i= 0; i < m_iDataLength-iDelayInSamples; i++)
+            {
+                CHECK_CLOSE(m_ppfInputData[c][i], m_ppfOutputData[c][i+iDelayInSamples], 1e-3F);
+                
+            }
+        }
     }
 
     

@@ -87,7 +87,21 @@ Error_t CMyProject::init(int numChannels,int sampleRate, int maxDelay, float LFO
     numChan = numChannels;
     
     freq = LFOFreq;
-    depth = (LFODepth * (maxDelay-1)/2);
+    
+    if  (LFODepth > ((maxDelay-1)/2))
+    {
+        depth = (maxDelay-1)/2;
+        std::cout << "max depth of "<< (maxDelay-1)/2 << " exceeded" << std::endl;
+        std::cout << "depth set to "<< (maxDelay-1)/2 << std::endl;
+
+    }
+    else
+    {
+       depth = LFODepth;
+    }
+    
+    depth = round(depth * sampleRate);
+    
     
     //std::cout << depth<< std::endl;
     

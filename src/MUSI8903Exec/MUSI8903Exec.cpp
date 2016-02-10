@@ -109,7 +109,8 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output file
     CMyProject::create(pMyProject);
-    pMyProject->init(stFileSpec.iNumChannels, stFileSpec.fSampleRateInHz,stFileSpec.fSampleRateInHz/100, LFOFreq, LFODepth);
+    pMyProject->init(stFileSpec.iNumChannels, stFileSpec.fSampleRateInHz,stFileSpec.fSampleRateInHz/50, LFOFreq, LFODepth);
+    
     while (!phAudioFile->isEof())
     {
         long long iNumFrames = kBlockSize;
