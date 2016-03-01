@@ -29,6 +29,6 @@ Error_t CFastConv::reset()
 
 Error_t CFastConv::process (float *pfInputBuffer, float *pfOutputBuffer, int iLengthOfBuffers )
 {
-
+	//process here
     return kNoError;
 }
