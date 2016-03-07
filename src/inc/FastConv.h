@@ -28,6 +28,10 @@ public:
     */
     Error_t reset ();
 
+	static Error_t create(CFastConv*& pCFastConv);
+
+	static Error_t destroy(CFastConv*& pCFastConv);
+
     /*! computes cost and path w/o back-tracking
     \param pfInputBuffer (mono)
     \param pfOutputBuffer (mono)

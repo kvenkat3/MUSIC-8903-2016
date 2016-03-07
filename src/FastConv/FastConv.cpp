@@ -15,19 +15,50 @@ CFastConv::~CFastConv( void )
     reset();
 }
 
+Error_t CFastConv::create(CFastConv*& pCFastConv)
+{
+	pCFastConv = new CFastConv();
+
+	if (!pCFastConv)
+		return kUnknownError;
+
+	return kNoError;
+}
+
+Error_t CFastConv::destroy(CFastConv*& pCFastConv)
+{
+	if (!pCFastConv)
+		return kUnknownError;
+
+	pCFastConv->reset();
+
+	delete pCFastConv;
+
+	pCFastConv = 0;
+
+	return kNoError;
+
+}
+
 Error_t CFastConv::init(float *pfImpulseResponse, int iLengthOfIr, int iBlockLength /*= 8192*/)
 {
 	m_pfImpulseResponse = pfImpulseResponse;
 
 	m_iLengthOfIr = iLengthOfIr;
 
-	m_pfTailBuffer = 0;
+	m_pfTailBuffer = new float[iLengthOfIr];
 
     return kNoError;
 }
 
 Error_t CFastConv::reset()
 {
+
+	m_pfImpulseResponse = 0;
+
+	m_iLengthOfIr = 0;
+
+	m_pfTailBuffer = 0;
 
     return kNoError;
 }
