@@ -42,7 +42,7 @@ public:
  
 	Error_t processTimeDomain(float *pfInputBuffer, float *pfOutputBuffer, int iLengthOfBuffers);
 
-	Error_t flushBuffer(float *pfOutputBuffer, int iLengthOfBuffers);
+	Error_t flushBuffer(float *pfReverbTail);
 
 private:
 	int m_iLengthOfIr;
