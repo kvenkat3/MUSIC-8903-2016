@@ -37,7 +37,7 @@ Error_t CFft::destroy( CFft*& pCFft )
     if (!pCFft)
         return kNoError;
 
-    delete pCFft;
+  //  delete pCFft;
     pCFft   = 0;
 
     return kNoError;
