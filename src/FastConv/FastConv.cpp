@@ -8,13 +8,13 @@
 
 CFastConv::CFastConv( void )
 {
-
     reset();
 }
 
 CFastConv::~CFastConv( void )
 {
     reset();
+    deallocate();
 }
 
 Error_t CFastConv::create(CFastConv*& pCFastConv)
@@ -34,9 +34,7 @@ Error_t CFastConv::destroy(CFastConv*& pCFastConv)
 	if (!pCFastConv)
 		return kUnknownError;
 
-	pCFastConv->reset();
-
-	//delete pCFastConv;
+	delete pCFastConv;
 
 	pCFastConv = 0;
 
@@ -52,53 +50,93 @@ Error_t CFastConv::init(float *pfImpulseResponse, int iLengthOfIr, int iBlockLen
     
     m_iBlockLength = iBlockLength;
 
-	m_pfTailBuffer = new float[iLengthOfIr-1];
-    CVectorFloat::setZero(m_pfTailBuffer, iLengthOfIr-1);
+    allocate();
     
-    m_pfInputTemp = new float[iBlockLength];
-    CVectorFloat::setZero(m_pfInputTemp, iBlockLength);
-
-    m_pfIrTemp = new float[iBlockLength];
-    CVectorFloat::setZero(m_pfIrTemp, iBlockLength);
-    
-    m_pfOutputTemp = new float[iBlockLength];
-    CVectorFloat::setZero(m_pfOutputTemp, iBlockLength);
-    
-    CFft::create(m_pCFft);
+  
     m_pCFft->init(iBlockLength);
-
-    m_pcInputSpectrum = new CFft::complex_t[iBlockLength];
-    m_pcIrSpectrum = new CFft::complex_t[iBlockLength];
-    m_pcResultSpectrum = new CFft::complex_t[iBlockLength];
     
+    std::cout << "IR len init " << m_iLengthOfIr << std::endl;
+    std::cout << "blok len init " << m_iBlockLength << std::endl;
+
     return kNoError;
 }
+
+void CFastConv::allocate() {
+    m_pfTailBuffer = new float[m_iLengthOfIr-1];
+    CVectorFloat::setZero(m_pfTailBuffer, m_iLengthOfIr-1);
+    
+    m_pfInputTemp = new float[m_iBlockLength];
+    CVectorFloat::setZero(m_pfInputTemp, m_iBlockLength);
+    
+    m_pfIrTemp = new float[m_iBlockLength];
+    CVectorFloat::setZero(m_pfIrTemp, m_iBlockLength);
+    
+    m_pfOutputTemp = new float[m_iBlockLength];
+    CVectorFloat::setZero(m_pfOutputTemp, m_iBlockLength );
+    
+    CFft::create(m_pCFft);
+    
+    m_pcInputSpectrum = new CFft::complex_t[m_iBlockLength];
+    m_pcIrSpectrum = new CFft::complex_t[m_iBlockLength];
+    m_pcResultSpectrum = new CFft::complex_t[m_iBlockLength];
+}
+
+void CFastConv::deallocate() {
+    
+    if(m_pfTailBuffer){
+        delete [] m_pfTailBuffer;
+        m_pfTailBuffer = 0;
+    }
+    
+    if(m_pfInputTemp){
+        delete [] m_pfInputTemp;
+        m_pfInputTemp = 0;
+    }
+    
+    if(m_pfIrTemp){
+        delete [] m_pfIrTemp;
+        m_pfIrTemp = 0;
+    }
+    if(m_pfOutputTemp){
+        delete [] m_pfOutputTemp;
+        m_pfOutputTemp=0;
+    }
+    
+    if(m_pcInputSpectrum){
+        delete [] m_pcInputSpectrum;
+        m_pcInputSpectrum = 0;
+    }
+    if(m_pcIrSpectrum){
+        delete [] m_pcIrSpectrum;
+        m_pcIrSpectrum = 0;
+    }
+    if(m_pcResultSpectrum){
+        delete [] m_pcResultSpectrum;
+        m_pcResultSpectrum = 0;
+    }
+    
+    if(m_pCFft){
+        CFft::destroy(m_pCFft);
+    }
+}
+
 
 Error_t CFastConv::reset()
 {
 
-	m_pfImpulseResponse = 0;
-
-	m_iLengthOfIr = 0;
-
-    m_iBlockLength = 0;
-
-    if(m_pfTailBuffer){
-        //delete [] m_pfTailBuffer;
-    }
-    m_pfTailBuffer = 0;
+     m_iLengthOfIr = 0;
+     m_iBlockLength = 0;
+     m_iNumInputBlocks = 0;
+     m_iNumIrBlocks = 0;
     
-    m_pfInputTemp = 0;
-    m_pfIrTemp = 0;
-    
-    m_pcInputSpectrum = 0;
-    m_pcIrSpectrum = 0;
-    m_pcResultSpectrum = 0;
+     m_iNumInputZeros = 0;
+     m_iNumIrZeros = 0;
+	 m_pfImpulseResponse = 0;
 
-    if(m_pCFft){
-        CFft::destroy(m_pCFft);
-    }
-    
+	 m_iLengthOfIr = 0;
+
+     m_iBlockLength = 0;
+
     return kNoError;
 }
 
@@ -174,6 +212,7 @@ Error_t CFastConv::process (float *pfInputBuffer, float *pfOutputBuffer, int iLe
                 CVectorFloat::copy(m_pcResultSpectrum, m_pcInputSpectrum, m_iBlockLength);
                 m_pCFft->mulCompSpectrum(m_pcResultSpectrum, m_pcIrSpectrum);
                 
+                /*
                 if (((m_iBlockLength * j) + (m_iBlockLength * i)) >= iLengthOfBuffers){
                     m_pCFft->doInvFft(m_pfOutputTemp, m_pcResultSpectrum);
                     CVectorFloat::copy(&m_pfTailBuffer[(m_iBlockLength * j) + (m_iBlockLength * i)], m_pfOutputTemp, m_iBlockLength);
@@ -181,6 +220,20 @@ Error_t CFastConv::process (float *pfInputBuffer, float *pfOutputBuffer, int iLe
                 else{
                     m_pCFft->doInvFft(m_pfOutputTemp, m_pcResultSpectrum);
                     CVectorFloat::copy(&pfOutputBuffer[(m_iBlockLength * j) + (m_iBlockLength * i)], m_pfOutputTemp, m_iBlockLength);
+                }
+                 */
+                
+                m_pCFft->doInvFft(m_pfOutputTemp, m_pcResultSpectrum);
+                
+                std::cout <<m_iBlockLength + m_iLengthOfIr-1 << std::endl;
+                
+                for (int x = 0; x < m_iBlockLength * 2; x++){
+                    if ( ((m_iBlockLength * j) + (m_iBlockLength * i) + x) >= iLengthOfBuffers){
+                        m_pfTailBuffer[((m_iBlockLength * j) + (m_iBlockLength * i) + x) - iLengthOfBuffers] = m_pfOutputTemp[x];
+                    }
+                    else{
+                        pfOutputBuffer[((m_iBlockLength * j) + (m_iBlockLength * i) + x)] = m_pfOutputTemp[x];
+                    }
                 }
                 
             }
@@ -229,8 +282,8 @@ Error_t CFastConv::processTimeDomain(float *pfInputBuffer, float *pfOutputBuffer
     for(int i = 0; i  < m_iNumInputBlocks; i++)
     {
         if (i == m_iNumInputBlocks - 1) {
-            //m_pfInputTemp = &pfInputBuffer[i * m_iBlockLength]; //OUR ERROR IS HERE
-            //CVectorFloat::setZero(&m_pfInputTemp[m_iBlockLength - m_iNumInputZeros], m_iNumInputZeros); //AND HERE
+            //m_pfInputTemp = &pfInputBuffer[i * m_iBlockLength];
+            //CVectorFloat::setZero(&m_pfInputTemp[m_iBlockLength - m_iNumInputZeros], m_iNumInputZeros);
             
             for (int z = 0; z < m_iBlockLength; z++){
                 m_pfInputTemp[z] = pfInputBuffer[(i * m_iBlockLength) + z];

@@ -14,7 +14,7 @@ class CFastConv
 public:
 
     CFastConv(void);
-    virtual ~CFastConv(void);
+    ~CFastConv(void);
 
     /*! initializes the class with the impulse response and the block length
     \param pfImpulseResponse impulse response samples (mono only)
@@ -46,6 +46,7 @@ public:
 	Error_t flushBuffer(float *pfReverbTail);
 
 private:
+    CFastConv(const CFastConv& that);
 	int m_iLengthOfIr;
     int m_iBlockLength;
     int m_iNumInputBlocks;
@@ -64,6 +65,8 @@ private:
     CFft::complex_t *m_pcInputSpectrum;
     CFft::complex_t *m_pcIrSpectrum;
     CFft::complex_t *m_pcResultSpectrum;
+    void allocate();
+    void deallocate();
     
     CFft *m_pCFft;
 };

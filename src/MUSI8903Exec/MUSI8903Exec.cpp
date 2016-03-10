@@ -6,6 +6,8 @@
 
 #include "AudioFileIf.h"
 
+#include "FastConv.h"
+
 using std::cout;
 using std::endl;
 
@@ -24,10 +26,22 @@ int main(int argc, char* argv[])
     clock_t                 time                = 0;
 
     float                   **ppfAudioData      = 0;
+    
+    float                   **ppfAudioDataOut   = 0;
 
     CAudioFileIf            *phAudioFile        = 0;
+    
+    float                   *pfIR               = 0;
+    
+    int                     iConvBlockLength    = 64;
+    
+    int                     iIrLength           = 51;
+    
     std::fstream            hOutputFile;
     CAudioFileIf::FileSpec_t stFileSpec;
+    
+    CFastConv               *pCFastConv;
+    
 
     showClInfo ();
 
@@ -68,10 +82,18 @@ int main(int argc, char* argv[])
     ppfAudioData            = new float* [stFileSpec.iNumChannels];
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         ppfAudioData[i] = new float [kBlockSize];
+    
+    ppfAudioDataOut         = new float* [stFileSpec.iNumChannels];
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+        ppfAudioData[i] = new float [kBlockSize];
+    
+    CFastConv::create(pCFastConv);
 
     time                    = clock();
     //////////////////////////////////////////////////////////////////////////////
-    // get audio data and write it to the output file
+    
+    pCFastConv->init(pfIR, iIrLength, iConvBlockLength);
+    
     while (!phAudioFile->isEof())
     {
         long long iNumFrames = kBlockSize;
@@ -81,6 +103,8 @@ int main(int argc, char* argv[])
         {
             for (int c = 0; c < stFileSpec.iNumChannels; c++)
             {
+                pCFastConv->process(ppfAudioData[c], ppfAudioDataOut[c], iNumFrames,false);
+
                 hOutputFile << ppfAudioData[c][i] << "\t";
             }
             hOutputFile << endl;
@@ -92,6 +116,9 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // clean-up
     CAudioFileIf::destroy(phAudioFile);
+    
+    CFastConv::destroy(pCFastConv);
+    
     hOutputFile.close();
 
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
