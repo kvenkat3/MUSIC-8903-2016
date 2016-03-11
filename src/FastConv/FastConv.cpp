@@ -45,15 +45,16 @@ Error_t CFastConv::destroy(CFastConv*& pCFastConv)
 Error_t CFastConv::init(float *pfImpulseResponse, int iLengthOfIr, int iBlockLength /*= 8192*/)
 {
 	m_pfImpulseResponse = pfImpulseResponse;
-
-	m_iLengthOfIr = iLengthOfIr;
     
+	m_iLengthOfIr = iLengthOfIr;
+    if(iBlockLength!=64){
+        std::cout<< "MMY PROBLEM IS HERE" << std::endl;}
     m_iBlockLength = iBlockLength;
 
     allocate();
     
   
-    m_pCFft->init(iBlockLength);
+    //m_pCFft->init(iBlockLength);
     
     std::cout << "IR len init " << m_iLengthOfIr << std::endl;
     std::cout << "blok len init " << m_iBlockLength << std::endl;
@@ -251,6 +252,9 @@ Error_t CFastConv::processTimeDomain(float *pfInputBuffer, float *pfOutputBuffer
     m_iNumInputBlocks = ceil((double)iLengthOfBuffers / m_iBlockLength) ;
     m_iNumInputZeros = (m_iBlockLength * m_iNumInputBlocks) - iLengthOfBuffers;
     
+    if(m_iBlockLength!=64)
+        std::cout<< "m_iBlockLength got changed " <<std::endl;
+    
     m_iNumIrBlocks = ceil((double)m_iLengthOfIr / m_iBlockLength) ;
     m_iNumIrZeros = (m_iBlockLength * m_iNumIrBlocks) - m_iLengthOfIr;
     
@@ -355,9 +359,9 @@ Error_t CFastConv::processTimeDomain(float *pfInputBuffer, float *pfOutputBuffer
 
 Error_t CFastConv::flushBuffer(float *pfReverbTail) {
 
-	for (int i = 0; i < m_iLengthOfIr; i++) {
+	for (int i = 0; i < m_iLengthOfIr-1; i++) {
         pfReverbTail[i] = m_pfTailBuffer[i];
-       // std::cout<< "FlushBuffer "<< pfReverbTail[i]<< std::endl;
+       std::cout<< "FlushBuffer "<< pfReverbTail[i]<< std::endl;
         m_pfTailBuffer[i] = 0;
 	}
     
