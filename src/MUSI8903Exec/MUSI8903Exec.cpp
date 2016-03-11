@@ -19,7 +19,8 @@ void    showClInfo ();
 int main(int argc, char* argv[])
 {
     std::string             sInputFilePath,                 //!< file paths
-                            sOutputFilePath;
+                            sOutputFilePath,
+                            sIrFilePath;
 
     static const int        kBlockSize          = 1024;
 
@@ -28,17 +29,21 @@ int main(int argc, char* argv[])
     float                   **ppfAudioData      = 0;
     
     float                   **ppfAudioDataOut   = 0;
+    
+    float                   **ppfIrData             = 0;
 
     CAudioFileIf            *phAudioFile        = 0;
     
-    float                   *pfIR               = 0;
+    CAudioFileIf            *phIrFile           = 0;
     
     int                     iConvBlockLength    = 64;
     
-    int                     iIrLength           = 51;
+    long long                     iIrLength           = 0;
     
     std::fstream            hOutputFile;
     CAudioFileIf::FileSpec_t stFileSpec;
+    
+    CAudioFileIf::FileSpec_t stIrFileSpec;
     
     CFastConv               *pCFastConv;
     
@@ -47,7 +52,7 @@ int main(int argc, char* argv[])
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
-    if (argc < 2)
+    if (argc < 3)
     {
         return -1;
     }
@@ -55,6 +60,7 @@ int main(int argc, char* argv[])
     {
         sInputFilePath  = argv[1];
         sOutputFilePath = sInputFilePath + ".txt";
+        sIrFilePath = argv[2];
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -67,6 +73,16 @@ int main(int argc, char* argv[])
         return -1;
     }
     phAudioFile->getFileSpec(stFileSpec);
+    
+    CAudioFileIf::create(phIrFile);
+    phIrFile->openFile(sIrFilePath, CAudioFileIf::kFileRead);
+    if (!phIrFile->isOpen())
+    {
+        cout << "Wave file open error!";
+        return -1;
+    }
+    phIrFile->getFileSpec(stIrFileSpec);
+
 
     //////////////////////////////////////////////////////////////////////////////
     // open the output text file
@@ -85,14 +101,24 @@ int main(int argc, char* argv[])
     
     ppfAudioDataOut         = new float* [stFileSpec.iNumChannels];
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
-        ppfAudioData[i] = new float [kBlockSize];
+        ppfAudioDataOut[i] = new float [kBlockSize];
     
     CFastConv::create(pCFastConv);
 
     time                    = clock();
     //////////////////////////////////////////////////////////////////////////////
     
-    pCFastConv->init(pfIR, iIrLength, iConvBlockLength);
+    phIrFile->getLength(iIrLength);
+    
+    phIrFile->readData(ppfIrData, iIrLength);
+    
+    ppfIrData               = new float* [stIrFileSpec.iNumChannels];
+    for (int i = 0; i < stIrFileSpec.iNumChannels; i++)
+        ppfIrData[i] = new float [iIrLength];
+    
+    pCFastConv->init(ppfIrData[0], iIrLength, iConvBlockLength);
+    
+///////////////////////////////////
     
     while (!phAudioFile->isEof())
     {
@@ -101,13 +127,12 @@ int main(int argc, char* argv[])
 
         for (int i = 0; i < iNumFrames; i++)
         {
-            for (int c = 0; c < stFileSpec.iNumChannels; c++)
-            {
-                pCFastConv->process(ppfAudioData[c], ppfAudioDataOut[c], iNumFrames,false);
+            pCFastConv->process(ppfAudioData[0], ppfAudioDataOut[0], iNumFrames,false);
 
-                hOutputFile << ppfAudioData[c][i] << "\t";
-            }
+            hOutputFile << ppfAudioData[0][i] << "\t";
+            
             hOutputFile << endl;
+   
         }
     }
 
@@ -125,6 +150,16 @@ int main(int argc, char* argv[])
         delete [] ppfAudioData[i];
     delete [] ppfAudioData;
     ppfAudioData = 0;
+    
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+        delete [] ppfAudioDataOut[i];
+    delete [] ppfAudioDataOut;
+    ppfAudioDataOut = 0;
+
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+        delete [] ppfIrData[i];
+    delete [] ppfIrData;
+    ppfIrData = 0;
 
     return 0;
     

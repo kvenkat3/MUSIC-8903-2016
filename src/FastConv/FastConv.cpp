@@ -56,8 +56,8 @@ Error_t CFastConv::init(float *pfImpulseResponse, int iLengthOfIr, int iBlockLen
   
     m_pCFft->init(iBlockLength,2, CFft::kWindowNone, CFft::kNoWindow);
     
-    std::cout << "IR len init " << m_iLengthOfIr << std::endl;
-    std::cout << "blok len init " << m_iBlockLength << std::endl;
+    //std::cout << "IR len init " << m_iLengthOfIr << std::endl;
+    //std::cout << "blok len init " << m_iBlockLength << std::endl;
 
     return kNoError;
 }
@@ -319,17 +319,17 @@ Error_t CFastConv::processTimeDomain(float *pfInputBuffer, float *pfOutputBuffer
     //std::cout <<  "num IRzeros "<< m_iNumIrZeros << std::endl;
 
     
-    std::cout <<  "ir len "<< m_iLengthOfIr -1 << std::endl;
+    //std::cout <<  "ir len "<< m_iLengthOfIr -1 << std::endl;
     
     
     for (int i = 0; i < m_iLengthOfIr -1; i++){
         if ( i >= iLengthOfBuffers){
-            std::cout << "tail buff "<<m_pfTailBuffer[i]<< std::endl;
+            //std::cout << "tail buff "<<m_pfTailBuffer[i]<< std::endl;
             m_pfTailBuffer[i - iLengthOfBuffers] = m_pfTailBuffer[i];
         }
         else{
             pfOutputBuffer[i] += m_pfTailBuffer[i];
-            std::cout << "tail buff "<<m_pfTailBuffer[i]<< std::endl;
+            //std::cout << "tail buff "<<m_pfTailBuffer[i]<< std::endl;
             m_pfTailBuffer[i] = 0;
         }
     }
