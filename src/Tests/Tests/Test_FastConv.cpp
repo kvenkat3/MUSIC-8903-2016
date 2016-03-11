@@ -102,7 +102,7 @@ SUITE(FastConv)
                // }
 
 
-                m_pCFastConv->process(m_pfInputDataTemp, m_pfOutputDataTemp, iNumFrames,false);
+                m_pCFastConv->process(m_pfInputDataTemp, m_pfOutputDataTemp, iNumFrames,true);
                 
                // std::cout << "out temp " << iNumFramesRemaining << std::endl;
               //  for (int z = 0; z < iNumFrames; z++){

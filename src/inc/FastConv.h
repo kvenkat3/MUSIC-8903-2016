@@ -58,6 +58,8 @@ private:
 	float *m_pfImpulseResponse;
 	float *m_pfTailBuffer;
     float *m_pfOutputTemp;
+    float *m_pfFastOutputTemp;
+
     float *m_pfInputTemp;
 
     float *m_pfIrTemp;
