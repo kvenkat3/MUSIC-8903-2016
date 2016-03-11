@@ -47,17 +47,13 @@ Error_t CFastConv::init(float *pfImpulseResponse, int iLengthOfIr, int iBlockLen
 	m_pfImpulseResponse = pfImpulseResponse;
     
 	m_iLengthOfIr = iLengthOfIr;
-    //if(iBlockLength!=64){
-     //   std::cout<< "MMY PROBLEM IS HERE" << std::endl;}
+    
     m_iBlockLength = iBlockLength;
 
     allocate();
     
   
     m_pCFft->init(iBlockLength,2, CFft::kWindowNone, CFft::kNoWindow);
-    
-    //std::cout << "IR len init " << m_iLengthOfIr << std::endl;
-    //std::cout << "blok len init " << m_iBlockLength << std::endl;
 
     return kNoError;
 }
@@ -165,12 +161,10 @@ Error_t CFastConv::process (float *pfInputBuffer, float *pfOutputBuffer, int iLe
         
         for (int i = 0; i < m_iLengthOfIr -1; i++){
             if ( i >= iLengthOfBuffers){
-             //   std::cout << "tail buff "<<m_pfTailBuffer[i]<< std::endl;
                 m_pfTailBuffer[i - iLengthOfBuffers] = m_pfTailBuffer[i];
             }
             else{
                 pfOutputBuffer[i] += m_pfTailBuffer[i];
-              //  std::cout << "tail buff "<<m_pfTailBuffer[i]<< std::endl;
                 m_pfTailBuffer[i] = 0;
             }
         }
@@ -179,38 +173,23 @@ Error_t CFastConv::process (float *pfInputBuffer, float *pfOutputBuffer, int iLe
         for(int i = 0; i  < m_iNumInputBlocks; i++)
         {
             if (i == m_iNumInputBlocks - 1) {
-                //m_pfInputTemp = &pfInputBuffer[i * m_iBlockLength];
-                //CVectorFloat::setZero(&m_pfInputTemp[m_iBlockLength - m_iNumInputZeros], m_iNumInputZeros);
-                
+
                 for (int z = 0; z < m_iBlockLength; z++){
                     m_pfInputTemp[z] = pfInputBuffer[(i * m_iBlockLength) + z];
-                  //  std::cout << m_pfInputTemp[z] << std::endl;
                 }
                 CVectorFloat::setZero(&m_pfInputTemp[m_iBlockLength - m_iNumInputZeros], m_iNumInputZeros);
                 
                 
-                // std::cout <<  "Block number "<< i << std::endl;
-                //  for (int z = 0; z < m_iBlockLength; z++){
-                //   std::cout << m_pfInputTemp[z] << std::endl;
-                // }
+                
             }
             else {
                 for (int z = 0; z < m_iBlockLength; z++){
                     m_pfInputTemp[z] = pfInputBuffer[(i * m_iBlockLength) + z];
-                  //  std::cout << m_pfInputTemp[z] << std::endl;
                 }
             }
             
             //input scaling
             CVectorFloat::mulC_I(m_pfInputTemp, 2 * m_iBlockLength, m_iBlockLength);
-            
-            /*
-            std::cout <<  "in buff temp "<< std::endl;
-             for (int z = 0; z < m_iBlockLength; z++){
-             std::cout << m_pfInputTemp[z] << std::endl;
-             }
-             */
-
             
             //INPUT FFT
             CVectorFloat::setZero(m_pcInputSpectrum, 2 * m_iBlockLength );
@@ -232,60 +211,28 @@ Error_t CFastConv::process (float *pfInputBuffer, float *pfOutputBuffer, int iLe
                     }
                 }
                 
-                /*
-                std::cout <<  "ir temp "<< std::endl;
-                for (int z = 0; z < m_iBlockLength; z++){
-                    std::cout << m_pfIrTemp[z] << std::endl;
-                }
-                 */
+                
 
                 //IR FFT
                 CVectorFloat::setZero(m_pcIrSpectrum, 2 * m_iBlockLength );
                 m_pCFft->doFft(m_pcIrSpectrum, m_pfIrTemp);
                 
-                /*
-                std::cout <<  "ir spec "<< std::endl;
-                for (int z = 0; z < m_iBlockLength; z++){
-                    std::cout << m_pcIrSpectrum[z] << std::endl;
-                }
-                 */
-
                 
                 //CONV
                 CVectorFloat::setZero(m_pcResultSpectrum, 2 * m_iBlockLength );
                 CVectorFloat::copy(m_pcResultSpectrum, m_pcIrSpectrum, 2 * m_iBlockLength);
                 m_pCFft->mulCompSpectrum(m_pcResultSpectrum, m_pcInputSpectrum);
                 
-                /*
-                std::cout <<  "res spec "<< std::endl;
-                for (int z = 0; z < m_iBlockLength; z++){
-                    std::cout << m_pcResultSpectrum[z] << std::endl;
-                }
-                 */
-
-                
                 m_pCFft->doInvFft(m_pfFastOutputTemp, m_pcResultSpectrum);
-                
-                /*
-                std::cout <<  "fast out temp "<< std::endl;
-                for (int z = 0; z < m_iBlockLength; z++){
-                    std::cout << m_pfFastOutputTemp[z] << std::endl;
-                }
-                 */
 
-                
-               // std::cout <<m_iBlockLength + m_iLengthOfIr-1 << std::endl;
-                
                 for (int k = 0; k < m_iBlockLength * 2; k++){
                     if ((k + (m_iBlockLength * j) + (m_iBlockLength * i)) >= iLengthOfBuffers){
                         
                         m_pfTailBuffer[((k + (m_iBlockLength * j) + (m_iBlockLength * i))) - iLengthOfBuffers] += m_pfFastOutputTemp[k];
-                        // std::cout << "tail buff "<<m_pfTailBuffer[((k + (m_iBlockLength * j) + (m_iBlockLength * i)))]<< std::endl;
                         
                     }
                     else{
-                        // std::cout << k + (m_iBlockLength * j) + (m_iBlockLength * i)<< "   " << pfOutputBuffer[k + (m_iBlockLength * j)+ (m_iBlockLength * i)]<< std::endl;
-                        //std::cout << (m_pfInputTemp[l] * m_pfIrTemp[k-l]) << std::endl;
+                        
                         pfOutputBuffer[k + (m_iBlockLength * j) + (m_iBlockLength * i)] += m_pfFastOutputTemp[k];
                     }
                 }
@@ -309,54 +256,28 @@ Error_t CFastConv::processTimeDomain(float *pfInputBuffer, float *pfOutputBuffer
     m_iNumIrBlocks = ceil((double)m_iLengthOfIr / m_iBlockLength) ;
     m_iNumIrZeros = (m_iBlockLength * m_iNumIrBlocks) - m_iLengthOfIr;
     
-    //std::cout <<  "block len "<< m_iBlockLength << std::endl;
-    //std::cout <<  "buff len "<< iLengthOfBuffers << std::endl;
-
-    //std::cout <<  "num Inputblox "<< m_iNumInputBlocks << std::endl;
-    //std::cout <<  "num Inputzeros "<< m_iNumInputZeros << std::endl;
-    
-    //std::cout <<  "num IRblox "<< m_iNumIrBlocks << std::endl;
-    //std::cout <<  "num IRzeros "<< m_iNumIrZeros << std::endl;
-
-    
-    //std::cout <<  "ir len "<< m_iLengthOfIr -1 << std::endl;
-    
     
     for (int i = 0; i < m_iLengthOfIr -1; i++){
         if ( i >= iLengthOfBuffers){
-            //std::cout << "tail buff "<<m_pfTailBuffer[i]<< std::endl;
             m_pfTailBuffer[i - iLengthOfBuffers] = m_pfTailBuffer[i];
         }
         else{
             pfOutputBuffer[i] += m_pfTailBuffer[i];
-            //std::cout << "tail buff "<<m_pfTailBuffer[i]<< std::endl;
             m_pfTailBuffer[i] = 0;
         }
     }
     
-    //std::cout <<  "in buff  "<< std::endl;
-   // for (int z = 0; z < iLengthOfBuffers; z++){
-       // std::cout << pfInputBuffer[z] << std::endl;
-   // }
-
-    
     //Input blocking
     for(int i = 0; i  < m_iNumInputBlocks; i++)
     {
+        //Add Input Values to Temp Buffer and Zero Pad Input block if necessary
         if (i == m_iNumInputBlocks - 1) {
-            //m_pfInputTemp = &pfInputBuffer[i * m_iBlockLength];
-            //CVectorFloat::setZero(&m_pfInputTemp[m_iBlockLength - m_iNumInputZeros], m_iNumInputZeros);
             
             for (int z = 0; z < m_iBlockLength; z++){
+               
                 m_pfInputTemp[z] = pfInputBuffer[(i * m_iBlockLength) + z];
             }
             CVectorFloat::setZero(&m_pfInputTemp[m_iBlockLength - m_iNumInputZeros], m_iNumInputZeros);
-            
-            
-           // std::cout <<  "Block number "<< i << std::endl;
-          //  for (int z = 0; z < m_iBlockLength; z++){
-             //   std::cout << m_pfInputTemp[z] << std::endl;
-           // }
         }
         else {
             for (int z = 0; z < m_iBlockLength; z++){
@@ -366,47 +287,44 @@ Error_t CFastConv::processTimeDomain(float *pfInputBuffer, float *pfOutputBuffer
         
   
         //IR blocking
-        for(int j = 0; j  < m_iNumIrBlocks; j++)
-        {
-            if (j == m_iNumIrBlocks - 1) {
-              //  m_pfIrTemp = &m_pfImpulseResponse[j * m_iBlockLength];
-               // CVectorFloat::setZero(&m_pfIrTemp[m_iBlockLength - m_iNumIrZeros], m_iNumIrZeros);
-                
-                for (int z = 0; z < m_iBlockLength; z++){
-                    m_pfIrTemp[z] = m_pfImpulseResponse[(j * m_iBlockLength) + z];
-                }
-                CVectorFloat::setZero(&m_pfIrTemp[m_iBlockLength - m_iNumIrZeros], m_iNumIrZeros);
-                
-            }
-            else {
-                for (int z = 0; z < m_iBlockLength; z++){
-                    m_pfIrTemp[z] = m_pfImpulseResponse[(j * m_iBlockLength) + z];
-                }
-            }
+    for(int j = 0; j  < m_iNumIrBlocks; j++)
+    {
+        //Add Input Values to IR Buffer and Zero Pad block if necessary
+        if (j == m_iNumIrBlocks - 1) {
             
-            for (int k = 0; k < 2 * m_iBlockLength; k++){
-                for (int l = 0; l < m_iBlockLength; l++){
-                    if(k - l < m_iBlockLength && k - l >= 0){
-                        if ((k + (m_iBlockLength * j) + (m_iBlockLength * i)) >= iLengthOfBuffers){
-                            
-                            m_pfTailBuffer[((k + (m_iBlockLength * j) + (m_iBlockLength * i))) - iLengthOfBuffers] = m_pfTailBuffer[((k + (m_iBlockLength * j) + (m_iBlockLength * i))) - iLengthOfBuffers] + (m_pfInputTemp[l] * m_pfIrTemp[k-l]);
-                           // std::cout << "tail buff "<<m_pfTailBuffer[((k + (m_iBlockLength * j) + (m_iBlockLength * i)))]<< std::endl;
-
-                        }
-                        else{
-                           // std::cout << k + (m_iBlockLength * j) + (m_iBlockLength * i)<< "   " << pfOutputBuffer[k + (m_iBlockLength * j)+ (m_iBlockLength * i)]<< std::endl;
-                            //std::cout << (m_pfInputTemp[l] * m_pfIrTemp[k-l]) << std::endl;
-                            pfOutputBuffer[k + (m_iBlockLength * j) + (m_iBlockLength * i)] = pfOutputBuffer[k + (m_iBlockLength * j) + (m_iBlockLength * i)] + (m_pfInputTemp[l] * m_pfIrTemp[k-l]);
-                        }
-                    }
-
-                }
-                
-
+            for (int z = 0; z < m_iBlockLength; z++){
+                m_pfIrTemp[z] = m_pfImpulseResponse[(j * m_iBlockLength) + z];
             }
+            CVectorFloat::setZero(&m_pfIrTemp[m_iBlockLength - m_iNumIrZeros], m_iNumIrZeros);
             
         }
+        else {
+            for (int z = 0; z < m_iBlockLength; z++){
+                m_pfIrTemp[z] = m_pfImpulseResponse[(j * m_iBlockLength) + z];
+            }
+        }
         
+        //Execute convolution for all Input blocks and IR blocks
+        //Place convolution output in Output Buffer and Tail Buffer (to account for reverb tail)
+        for (int k = 0; k < 2 * m_iBlockLength; k++){
+            for (int l = 0; l < m_iBlockLength; l++){
+                if(k - l < m_iBlockLength && k - l >= 0){
+                    if ((k + (m_iBlockLength * j) + (m_iBlockLength * i)) >= iLengthOfBuffers){
+                        
+                        m_pfTailBuffer[((k + (m_iBlockLength * j) + (m_iBlockLength * i))) - iLengthOfBuffers] = m_pfTailBuffer[((k + (m_iBlockLength * j) + (m_iBlockLength * i))) - iLengthOfBuffers] + (m_pfInputTemp[l] * m_pfIrTemp[k-l]);
+
+                    }
+                    else{
+                        pfOutputBuffer[k + (m_iBlockLength * j) + (m_iBlockLength * i)] = pfOutputBuffer[k + (m_iBlockLength * j) + (m_iBlockLength * i)] + (m_pfInputTemp[l] * m_pfIrTemp[k-l]);
+                    }
+               
+                }
+
+             }
+            
+          }
+            
+        }
         
     }
     
@@ -415,11 +333,11 @@ Error_t CFastConv::processTimeDomain(float *pfInputBuffer, float *pfOutputBuffer
     return kNoError;
 }
 
+//Outputs Reverb Tail and clears Tail Buffer
 Error_t CFastConv::flushBuffer(float *pfReverbTail) {
 
 	for (int i = 0; i < m_iLengthOfIr-1; i++) {
         pfReverbTail[i] = m_pfTailBuffer[i];
-   //    std::cout<< "FlushBuffer "<< pfReverbTail[i]<< std::endl;
         m_pfTailBuffer[i] = 0;
 	}
     

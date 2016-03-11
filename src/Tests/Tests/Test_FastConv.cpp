@@ -67,60 +67,20 @@ SUITE(FastConv)
 
             
             int iNumFramesRemaining = m_iDataLength;
-            //Zero pad Input Buffer if data length is smaller than buffer block length
-          /* if (m_iDataLength < m_iInputBufferBlockLength){
-                m_iNumBufferZeros = m_iInputBufferBlockLength - m_iDataLength;
-                CVectorFloat::setZero(&m_pfInputData[m_iInputBufferBlockLength - m_iNumBufferZeros], m_iNumBufferZeros);
-            }
-           */
-            
-           // CVectorFloat::setZero(m_pfOutputData, m_iDataLength);
-
-            
-            
+           
             while (iNumFramesRemaining > 0)
             {
                 int iNumFrames = std::min(iNumFramesRemaining, m_iInputBufferBlockLength);
                 
-                //int iNumFrames = m_iInputBufferBlockLength;
-                
-                
                 m_pfInputDataTemp = &m_pfInputData[m_iDataLength - iNumFramesRemaining];
                 m_pfOutputDataTemp = &m_pfOutputData[m_iDataLength - iNumFramesRemaining];
-                
-                //std::cout << "offset" << m_iDataLength - iNumFramesRemaining << std::endl;
-               // std::cout << "offset" << m_pfInputData[m_iDataLength - iNumFramesRemaining] << std::endl;
-
-               // std::cout << "Input Data" << std::endl;
-                //for (int z = 0; z < m_iDataLength; z++){
-                  //  std::cout << m_pfInputData[z] << std::endl;
-                //}
-                
-               // std::cout << "iNumFramesRemaining " << iNumFramesRemaining << std::endl;
-               // for (int z = 0; z < iNumFrames; z++){
-                  //  std::cout << m_pfInputDataTemp[z] << std::endl;
-               // }
-
-
+        
                 m_pCFastConv->process(m_pfInputDataTemp, m_pfOutputDataTemp, iNumFrames,true);
-                
-               // std::cout << "out temp " << iNumFramesRemaining << std::endl;
-              //  for (int z = 0; z < iNumFrames; z++){
-                 //   std::cout << m_pfOutputDataTemp[z] << std::endl;
-               // }
-
                 
                 iNumFramesRemaining -= iNumFrames;
                 
             }
-            /*
-            std::cout << " Output Data before Flushbuff " << std::endl;
-
-            for (int z = 0; z < m_iDataLength+m_iIRLength-1; z++){
-              //  std::cout << m_pfOutputData[z] << std::endl;
-            }
-            std::cout << " End Output Data before Flushbuff " << std::endl;
-             */
+            
             
             m_pCFastConv->flushBuffer(&m_pfOutputData[m_iDataLength]);
 
@@ -163,21 +123,10 @@ SUITE(FastConv)
 
 		for (int i = 0; i < m_iIRLength; i++) {
 			m_pfIR[i] = ((float)rand() / (float)(RAND_MAX) * 2.0F - 1.F) ;
-          // std::cout << "ir " << m_pfIR[i] << std::endl;
 		}
-        /*
-        for (int i = 0; i < m_iDataLength; i++) {
-            std::cout << "InputData " << m_pfInputData[i] << std::endl;
-        }
         
-        std::cout << "IR len " << m_iIRLength << std::endl;
-        std::cout << "conv blox lin " << m_iConvBlockLength << std::endl;
-        
-
-         */
 
 		m_pCFastConv->init(m_pfIR, m_iIRLength, m_iConvBlockLength );
-       // std::cout<<m_pCFastConv->m_iBlockLength<<std::endl;
 		TestProcess();
         
     
@@ -185,11 +134,9 @@ SUITE(FastConv)
 		{
             
             if (i < m_iIRLength + iDelayInSamples-1 && i >= iDelayInSamples-1){
-                std::cout << i << "   " << m_pfIR[i-iDelayInSamples+1] << "   " << m_pfOutputData[i] << std::endl;
                 CHECK_CLOSE(m_pfIR[i-iDelayInSamples+1], m_pfOutputData[i], 1e-3F);
             }
             else{
-                std::cout << i << "   " << m_pfOutputData[i] << std::endl;
                 CHECK_CLOSE(0, m_pfOutputData[i], 1e-3F);
             }
 			
@@ -214,22 +161,9 @@ SUITE(FastConv)
             
             for (int i = 0; i < m_iIRLength; i++) {
                 m_pfIR[i] = ((float)rand() / (float)(RAND_MAX) * 2.0F - 1.F) ;
-              //  std::cout << "ir " << m_pfIR[i] << std::endl;
             }
             
-     
-            //for (int i = 0; i < m_iDataLength; i++) {
-              //  std::cout << "InputData " << m_pfInputData[i] << std::endl;
-            //}
-     
-            
-           // std::cout << "IR len " << m_iIRLength << std::endl;
-           // std::cout << "conv blox lin " << m_iConvBlockLength << std::endl;
-            
-            
-            
             m_pCFastConv->init(m_pfIR, m_iIRLength, m_iConvBlockLength );
-            // std::cout<<m_pCFastConv->m_iBlockLength<<std::endl;
             TestProcess();
             
             
@@ -237,11 +171,9 @@ SUITE(FastConv)
             {
                 
                 if (i < m_iIRLength + iDelayInSamples-1 && i >= iDelayInSamples-1){
-                  //  std::cout << i << "   " << m_pfIR[i-iDelayInSamples+1] << "   " << m_pfOutputData[i] << std::endl;
                     CHECK_CLOSE(m_pfIR[i-iDelayInSamples+1], m_pfOutputData[i], 1e-3F);
                 }
                 else{
-                  //  std::cout << i << "   " << m_pfOutputData[i] << std::endl;
                     CHECK_CLOSE(0, m_pfOutputData[i], 1e-3F);
                 }
                 

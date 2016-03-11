@@ -40,6 +40,9 @@ int main(int argc, char* argv[])
     
     long long                     iIrLength           = 0;
     
+    long long                     iInputLength           = 0;
+
+    
     std::fstream            hOutputFile;
     CAudioFileIf::FileSpec_t stFileSpec;
     
@@ -127,7 +130,7 @@ int main(int argc, char* argv[])
 
         for (int i = 0; i < iNumFrames; i++)
         {
-            pCFastConv->process(ppfAudioData[0], ppfAudioDataOut[0], iNumFrames,false);
+            pCFastConv->process(ppfAudioData[0], ppfAudioDataOut[0], iNumFrames,true);
 
             hOutputFile << ppfAudioData[0][i] << "\t";
             
@@ -135,6 +138,17 @@ int main(int argc, char* argv[])
    
         }
     }
+    
+    phAudioFile->getLength(iInputLength);
+    
+    pCFastConv->flushBuffer(&ppfAudioDataOut[0][0]);
+    
+    for(int j = 0; j < iIrLength-1; j++){
+        hOutputFile << ppfAudioData[0][j] << "\t";
+        hOutputFile << endl;
+    }
+
+    
 
     cout << "reading/writing done in: \t"    << (clock()-time)*1.F/CLOCKS_PER_SEC << " seconds." << endl;
 
