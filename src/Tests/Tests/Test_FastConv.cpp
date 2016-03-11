@@ -19,8 +19,10 @@ SUITE(FastConv)
         FastConvData()
         {
             
-            m_pfInputData = new float [int(ceil((double)m_iDataLength/m_iInputBufferBlockLength) * m_iInputBufferBlockLength)];
-            CVectorFloat::setZero(m_pfInputData, int(ceil((double)m_iDataLength/m_iInputBufferBlockLength) * m_iInputBufferBlockLength));
+            m_iPaddedInputLength = int(ceil((double)m_iDataLength/m_iInputBufferBlockLength) * m_iInputBufferBlockLength);
+            
+            m_pfInputData = new float [m_iPaddedInputLength];
+            CVectorFloat::setZero(m_pfInputData, m_iPaddedInputLength);
 
             m_pfOutputData = new float [m_iDataLength+m_iIRLength-1];
             CVectorFloat::setZero(m_pfOutputData, m_iDataLength+m_iIRLength-1);
@@ -36,7 +38,8 @@ SUITE(FastConv)
             m_piBlockSizes[2] = 17;
             m_piBlockSizes[3] = 1023;
             m_piBlockSizes[4] = 1897;
-            m_piBlockSizes[5] = 5000;
+            m_piBlockSizes[5] = 2048;
+            m_piBlockSizes[6] = 5000;
 			
         }
 
@@ -51,7 +54,8 @@ SUITE(FastConv)
             m_pfOutputData = 0;
             delete [] m_pfIR;
             m_pfIR = 0;
-
+        
+            m_iPaddedInputLength =0;
           
      
 			
@@ -136,8 +140,9 @@ SUITE(FastConv)
             m_iInputBufferBlockLength = 40,
             m_iConvBlockLength = 64,
             *m_piBlockSizes,
-            m_iNumBlockSizes = 6,
-            m_iNumBufferZeros = 0;
+            m_iNumBlockSizes = 7,
+            m_iNumBufferZeros = 0,
+            m_iPaddedInputLength = 0;
 			
     };
 
@@ -147,10 +152,12 @@ SUITE(FastConv)
 		// identity: generate a random IR (length 51 s), set it (init) and check the the output of a delayed (5 samples) impulse is the shifted IR.
         
         m_iIRLength = 51;
+        
+        m_iDataLength = 1000;
 
 		int iDelayInSamples = 5;
         CVectorFloat::setZero(m_pfOutputData, m_iDataLength+m_iIRLength-1);
-		CVectorFloat::setZero(m_pfInputData, m_iDataLength);
+		CVectorFloat::setZero(m_pfInputData, m_iPaddedInputLength);
 		m_pfInputData[iDelayInSamples-1] = 1;
 
 		for (int i = 0; i < m_iIRLength; i++) {
@@ -187,59 +194,61 @@ SUITE(FastConv)
 		}
     }
 
-    /*
+    
     TEST_FIXTURE(FastConvData, InputBlockLengthTest)
     {
         
-        //m_iDataLength = 1000;
+        m_iDataLength = 1000;
     
+        m_iIRLength = 51;
+        
+        int iDelayInSamples = 5;
         
         for (int z = 0; z < m_iNumBlockSizes; z++){
             
-            m_iInputBufferBlockLength = m_piBlockSizes[z];
-
-        
-            m_pCFastConv->reset();
-        
-            m_iIRLength = 51;
-        
-            int iDelayInSamples = 5;
-        
-            CVectorFloat::setZero(m_pfInputData, m_iDataLength);
+            CVectorFloat::setZero(m_pfOutputData, m_iDataLength+m_iIRLength-1);
+            CVectorFloat::setZero(m_pfInputData, m_iPaddedInputLength);
             m_pfInputData[iDelayInSamples-1] = 1;
-        
-            for (int i = 0; i < m_iIRLength; i++) {
-                m_pfIR[i] = ((float)rand() / (RAND_MAX)) ;
-                //  std::cout << "ir " << m_pfIR[i] << std::endl;
-            }
-        
-        
-        
-            m_pCFastConv->init(m_pfIR, m_iIRLength, m_iConvBlockLength );
-        
-        
-           // std::cout <<  "blok len "<< m_iInputBufferBlockLength << std::endl;
             
+            for (int i = 0; i < m_iIRLength; i++) {
+                m_pfIR[i] = ((float)rand() / (float)(RAND_MAX) * 2.0F - 1.F) ;
+              //  std::cout << "ir " << m_pfIR[i] << std::endl;
+            }
+            
+            /*
+            for (int i = 0; i < m_iDataLength; i++) {
+                std::cout << "InputData " << m_pfInputData[i] << std::endl;
+            }
+             */
+            
+           // std::cout << "IR len " << m_iIRLength << std::endl;
+           // std::cout << "conv blox lin " << m_iConvBlockLength << std::endl;
+            
+            
+            
+            m_pCFastConv->init(m_pfIR, m_iIRLength, m_iConvBlockLength );
+            // std::cout<<m_pCFastConv->m_iBlockLength<<std::endl;
             TestProcess();
-        
+            
+            
             for (int i = 0; i < m_iDataLength + m_iIRLength -1; i++)
             {
-            
-                if (i < m_iIRLength + iDelayInSamples && i > iDelayInSamples-1){
-                    //  std::cout << i << "   " << m_pfIR[i-iDelayInSamples+1] << "   " << m_pfOutputData[i] << std::endl;
+                
+                if (i < m_iIRLength + iDelayInSamples-1 && i >= iDelayInSamples-1){
+                    std::cout << i << "   " << m_pfIR[i-iDelayInSamples+1] << "   " << m_pfOutputData[i] << std::endl;
                     CHECK_CLOSE(m_pfIR[i-iDelayInSamples+1], m_pfOutputData[i], 1e-3F);
                 }
                 else{
-                    // std::cout << i << "   " << m_pfOutputData[i] << std::endl;
+                    std::cout << i << "   " << m_pfOutputData[i] << std::endl;
                     CHECK_CLOSE(0, m_pfOutputData[i], 1e-3F);
                 }
-            
+                
             }
             
         }
 
     }
-     */
+    
 
 }
 
