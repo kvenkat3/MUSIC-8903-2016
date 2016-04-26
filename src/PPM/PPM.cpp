@@ -154,9 +154,9 @@ Error_t CPPM::process(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumb
             else {
                 m_fPPMValueTemp = m_fAlphaA * ppfInputBuffer[c][i] + (1 - m_fAlphaA) * m_pfTempBuffer[c];
             }
-            //m_pfTempBuffer[c] = m_fPPMValueTemp;
+            m_pfTempBuffer[c] = m_fPPMValueTemp;
             if (ppfOutputBuffer != NULL) {
-                ppfInputBuffer[c][i] = m_fPPMValueTemp;
+                ppfOutputBuffer[c][i] = m_fPPMValueTemp;
             }
             if (m_fPPMValueTemp > m_pfPPMValues[c]) {
                 m_pfPPMValues[c] = m_fPPMValueTemp;
