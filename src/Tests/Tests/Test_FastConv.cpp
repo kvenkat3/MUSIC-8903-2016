@@ -9,6 +9,7 @@
 #include "UnitTest++.h"
 
 #include "Vector.h"
+#include "PPM.h"
 
 #include "FastConv.h"
 

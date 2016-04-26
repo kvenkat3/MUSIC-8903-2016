@@ -32,6 +32,8 @@ list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/CombFilter)
 list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/Dtw) 
 list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/FastConv) 
 list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/Tests/TestExec)
+list (APPEND PROJECT_DIRECTORIES ${CMAKE_SOURCE_DIR}/src/PPM)
+
     
 # set includes
 set (PROJECT_INCLUDES)
@@ -67,6 +69,8 @@ if (WITH_TESTS)
     add_test(Dtw ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec Dtw)
     add_test(FastConv ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec FastConv)
     add_test(RingBuff ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec RingBuff)
+    add_test(RingBuff ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestExec PPM)
+
     add_cppcheck_test ()
 endif (WITH_TESTS)
 
