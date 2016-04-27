@@ -11,28 +11,28 @@ static const char*  kCVibratoBuildDate = __DATE__;
 CPPM::CPPM() :
 m_bIsInitialized(false),
 m_fSampleRate(44100),
-m_iNumChannels(0),
+m_iNumChannels(1),
 m_fAttack(.01),
 m_fRelease(1.5)
 {
-    
-    // this never hurts
-    // this->resetInstance ();
+    m_pfPPMValues = 0;
+    m_pfTempBuffer = 0;
 }
 
 CPPM::~CPPM()
 {
-    this->resetInstance();
-    deallocate();
+   // this->resetInstance();
+    
 }
 
 Error_t CPPM::allocate()
 {
-    
-    m_pfTempBuffer = new float[m_iNumChannels];
+    if (!m_pfTempBuffer)
+        m_pfTempBuffer = new float[m_iNumChannels];
     CVectorFloat::setZero(m_pfTempBuffer, m_iNumChannels);
     
-    m_pfPPMValues = new float[m_iNumChannels];
+    if (!m_pfPPMValues)
+        m_pfPPMValues = new float[m_iNumChannels];
     CVectorFloat::setZero(m_pfPPMValues, m_iNumChannels);
     
     return kNoError;
@@ -40,14 +40,14 @@ Error_t CPPM::allocate()
 
 Error_t CPPM::deallocate()
 {
-    if (m_pfTempBuffer) {
-        delete[] m_pfTempBuffer;
-        m_pfTempBuffer = 0;
+    if (m_pfPPMValues) {
+        delete[]  m_pfPPMValues;
+        m_pfPPMValues = 0;
     }
     
-    if (m_pfPPMValues){
-        delete[] m_pfPPMValues;
-        m_pfPPMValues=0;
+    if (m_pfTempBuffer) {
+        delete [] m_pfTempBuffer;
+        m_pfTempBuffer = 0;
     }
     
     return kNoError;
@@ -95,7 +95,9 @@ Error_t CPPM::destroyInstance(CPPM*& pCPPM)
     if (!pCPPM)
         return kUnknownError;
     
-   pCPPM->resetInstance();
+    pCPPM->resetInstance();
+    
+    pCPPM->deallocate();
     
     delete pCPPM;
     pCPPM = 0;
@@ -114,8 +116,7 @@ Error_t CPPM::initInstance(float fSampleRateInHz, int iNumChannels, float attack
     m_fAlphaA = 1 - exp(-2.2 / (m_fSampleRate * m_fAttack));
     m_fAlphaR = 1 - exp(-2.2 / (m_fSampleRate * m_fRelease));
     
-    m_fPPMValue = 0;
-    m_fPPMValueTemp = 0;
+    deallocate();
     
     m_iNumChannels = iNumChannels;
     
@@ -139,10 +140,10 @@ Error_t CPPM::process(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumb
     if (!ppfInputBuffer || iNumberOfFrames < 0)
         return kFunctionInvalidArgsError;
     
-   // m_fPPMValue = 0;
+    // m_fPPMValue = 0;
     
     CVectorFloat::setZero(m_pfPPMValues, m_iNumChannels);
-
+    
     
     for (int i = 0; i < iNumberOfFrames; i++)
     {
@@ -168,8 +169,8 @@ Error_t CPPM::process(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumb
 }
 
 /*float CPPM::getPPMValue() {
-    return m_fPPMValue;
-}*/
+ return m_fPPMValue;
+ }*/
 
 
 void CPPM::setAttack(float a) {

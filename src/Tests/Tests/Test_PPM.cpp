@@ -71,6 +71,44 @@ SUITE(PPM)
             phOnesPPMAudioFile->getFileSpec(stOnesPPMAudioFileSpec);
             
             
+            sPulseAudioFilePath = "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Pulse.wav" ;
+            CAudioFileIf::create(phPulseAudioFile);
+            phPulseAudioFile->openFile(sPulseAudioFilePath, CAudioFileIf::kFileRead);
+            if (!phPulseAudioFile->isOpen())
+            {
+                std::cout << "Wave file open error!";
+            }
+            phPulseAudioFile->getFileSpec(sPulseAudioFileSpec);
+            
+            sPulsePPMAudioFilePath = "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Pulse_PPM.wav" ;
+            CAudioFileIf::create(phPulsePPMAudioFile);
+            phPulsePPMAudioFile->openFile(sPulsePPMAudioFilePath, CAudioFileIf::kFileRead);
+            if (!phPulsePPMAudioFile->isOpen())
+            {
+                std::cout << "Wave file open error!";
+            }
+            phPulsePPMAudioFile->getFileSpec(sPulsePPMAudioFileSpec);
+            
+            sSinAudioFilePath = "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Sin.wav" ;
+            CAudioFileIf::create(phSinAudioFile);
+            phSinAudioFile->openFile(sSinAudioFilePath, CAudioFileIf::kFileRead);
+            if (!phSinAudioFile->isOpen())
+            {
+                std::cout << "Wave file open error!";
+            }
+            phSinAudioFile->getFileSpec(sSinAudioFileSpec);
+            
+            sSinPPMAudioFilePath= "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Sin_PPM.wav" ;
+            CAudioFileIf::create(phSinPPMAudioFile);
+            phSinPPMAudioFile->openFile(sSinPPMAudioFilePath, CAudioFileIf::kFileRead);
+            if (!phSinPPMAudioFile->isOpen())
+            {
+                std::cout << "Wave file open error!";
+            }
+            phSinPPMAudioFile->getFileSpec(sSinPPMAudioFileSpec);
+            
+            
+            
             
         }
         
@@ -93,6 +131,14 @@ SUITE(PPM)
             
             CPPM::destroyInstance(m_pPPM);
             
+            CAudioFileIf::destroy(phSinPPMAudioFile);
+            CAudioFileIf::destroy(phSinAudioFile);
+            CAudioFileIf::destroy(phPulsePPMAudioFile);
+            CAudioFileIf::destroy(phPulseAudioFile);
+            CAudioFileIf::destroy(phOnesPPMAudioFile);
+            CAudioFileIf::destroy(phOnesAudioFile);
+            
+            
             
             
         }
@@ -102,6 +148,7 @@ SUITE(PPM)
         {
             
             
+            std::cout << "BLock length " << m_iBlockLength << "\n" << std::endl;
             
             int iNumFramesRemaining = m_iDataLength;
             while (iNumFramesRemaining > 0)
@@ -130,14 +177,13 @@ SUITE(PPM)
         **m_ppfInputTmp,
         m_pfOutput,
         *m_pfIR;
-        std::string  sOnesFilePath,
-        sOnesPPMFilePath;
-        CAudioFileIf            *phOnesAudioFile,*phOnesPPMAudioFile;
-        CAudioFileIf::FileSpec_t sOnesAudioFileSpec,stOnesPPMAudioFileSpec;
-        
+        std::string  sOnesFilePath,sOnesPPMFilePath, sPulseAudioFilePath, sPulsePPMAudioFilePath, sSinAudioFilePath, sSinPPMAudioFilePath ;
+        CAudioFileIf            *phOnesAudioFile,*phOnesPPMAudioFile,
+        *phPulseAudioFile, *phPulsePPMAudioFile, *phSinAudioFile, *phSinPPMAudioFile;
+        CAudioFileIf::FileSpec_t sOnesAudioFileSpec,stOnesPPMAudioFileSpec,
+        sPulseAudioFileSpec, sPulsePPMAudioFileSpec, sSinAudioFileSpec, sSinPPMAudioFileSpec;
         
         int     m_iDataLength = 100;
-        float   m_fMaxDelayLength;
         int     m_iBlockLength=10;
         int     m_iNumChannels = 1;
         float   m_fSampleRate = 44100;
@@ -161,21 +207,21 @@ SUITE(PPM)
         
         for (int i = 0; i < m_iDataLength ; i++)
         {
-            for (int j= 0; j<m_iNumChannels; j++)
+            for (int c= 0; c<m_iNumChannels; c++)
             {
-                CHECK_CLOSE(m_ppfInputData[j][i], m_ppfOutputData[j][i], 1e-3F);
-                CHECK_CLOSE(0, m_ppfOutputData[j][i], 1e-3F);
+                CHECK_CLOSE(m_ppfInputData[c][i], m_ppfOutputData[c][i], 1e-3F);
+                CHECK_CLOSE(0, m_ppfOutputData[c][i], 1e-3F);
             }
         }
         
     }
-     
+    
     
     
     
     TEST_FIXTURE(PPMData, AttackTimeTest)
     {
-        //Send in test signal of one's to determine attack time calculations are correct.
+        //Send in test signal of one's to determine attack time calculations veracity.
         m_iNumChannels =1;
         
         m_fSampleRate = 2000;
@@ -187,7 +233,6 @@ SUITE(PPM)
             CVectorFloat::setZero(m_ppfInputData[c], m_iDataLength);
             CVectorFloat::setZero(m_ppfOutputData[c], m_iDataLength);
         }
-        
         
         long long iFrames = m_iDataLength;
         phOnesAudioFile->readData(m_ppfInputData, iFrames);
@@ -201,12 +246,97 @@ SUITE(PPM)
             for (int c= 0; c<m_iNumChannels; c++)
             {
                 
-                CHECK_CLOSE(m_ppfMatlabData[0][i], m_ppfOutputData[0][i], 1e-3F);
+                CHECK_CLOSE(m_ppfMatlabData[c][i], m_ppfOutputData[c][i], 1e-3F);
                 
             }
         }
         
     }
+    
+    TEST_FIXTURE(PPMData, ReleaseTimeTest)
+    {
+        //Send in test signal of a pulse to test attack time calculations veracity.
+        m_iNumChannels =1;
+        
+        m_fSampleRate = 2000;
+        m_pPPM->initInstance( m_fSampleRate,  m_iNumChannels, .01, .01);
+        m_iDataLength = 100;
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+        {
+            CVectorFloat::setZero(m_ppfInputData[c], m_iDataLength);
+            CVectorFloat::setZero(m_ppfOutputData[c], m_iDataLength);
+        }
+        
+        long long iFrames = m_iDataLength;
+        phPulseAudioFile->readData(m_ppfInputData, iFrames);
+        phPulsePPMAudioFile->readData(m_ppfMatlabData, iFrames);
+        
+        TestProcess();
+        
+        for (int i = 0; i < m_iDataLength ; i++)
+        {
+            
+            for (int c= 0; c<m_iNumChannels; c++)
+            {
+                
+                CHECK_CLOSE(m_ppfMatlabData[c][i], m_ppfOutputData[c][i], 1e-3F);
+                //std::cout<< "Matlab "<< m_ppfMatlabData[0][i] << " " << "C++ : " << m_ppfOutputData[0][i] << "\n" <<std::endl;
+                
+            }
+        }
+        
+    }
+    TEST_FIXTURE(PPMData, BlockSizeTest)
+    {
+        //Run three different test cases to test robustness to block length changes
+        int *blockSizes;
+        blockSizes = new int[3];
+        blockSizes[0] = 30;
+        blockSizes[1] = 10;
+        blockSizes[2] = 60;
+        m_fSampleRate = 2000;
+        m_iNumChannels =1;
+        m_iDataLength = 100;
+        long long iFrames = m_iDataLength;
+        phSinAudioFile->readData(m_ppfInputData, iFrames);
+        phSinPPMAudioFile->readData(m_ppfMatlabData, iFrames);
+        
+        for(int j = 0; j < 3; j++){
+            m_iBlockLength = blockSizes[j];
+            if (m_iBlockLength>m_iDataLength)
+                std::cout<< "Block length greater than Data Length \n" << std::endl;
+            
+            std::cout << "BLock length " << m_iBlockLength << "\n" << std::endl;
+            
+            m_pPPM->initInstance( m_fSampleRate,  m_iNumChannels, .01, .01);
+            
+            for (int c = 0; c < m_iNumChannels; c++)
+            {
+                // CVectorFloat::setZero(m_ppfInputData[c], m_iDataLength);
+                CVectorFloat::setZero(m_ppfOutputData[c], m_iDataLength);
+            }
+            
+            TestProcess();
+            
+            for (int i = 0; i < m_iDataLength ; i++)
+            {
+                
+                for (int c= 0; c<m_iNumChannels; c++)
+                {
+                    
+                    CHECK_CLOSE(m_ppfMatlabData[c][i], m_ppfOutputData[c][i], 1e-3F);
+                    std::cout<< "Matlab "<< m_ppfMatlabData[c][i] << " " << "C++ : " << m_ppfOutputData[c][i] << "\n" <<std::endl;
+                    
+                }
+            }
+            std::cout<< "ITeration THRU \n " << std::endl;
+        }
+        
+        delete [] blockSizes;
+        
+    }
+    
     
     
     
