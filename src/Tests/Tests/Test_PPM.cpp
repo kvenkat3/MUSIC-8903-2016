@@ -52,7 +52,7 @@ SUITE(PPM)
             
             
             // Read Audio Files
-            sOnesFilePath = "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Ones.wav" ;
+            sOnesFilePath = "Ones.wav" ;
             CAudioFileIf::create(phOnesAudioFile);
             phOnesAudioFile->openFile(sOnesFilePath, CAudioFileIf::kFileRead);
             if (!phOnesAudioFile->isOpen())
@@ -61,7 +61,7 @@ SUITE(PPM)
             }
             phOnesAudioFile->getFileSpec(sOnesAudioFileSpec);
             
-            sOnesPPMFilePath = "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Ones_PPM.wav" ;
+            sOnesPPMFilePath = "Ones_PPM.wav" ;
             CAudioFileIf::create(phOnesPPMAudioFile);
             phOnesPPMAudioFile->openFile(sOnesPPMFilePath, CAudioFileIf::kFileRead);
             if (!phOnesPPMAudioFile->isOpen())
@@ -71,7 +71,7 @@ SUITE(PPM)
             phOnesPPMAudioFile->getFileSpec(stOnesPPMAudioFileSpec);
             
             
-            sPulseAudioFilePath = "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Pulse.wav" ;
+            sPulseAudioFilePath = "Pulse.wav" ;
             CAudioFileIf::create(phPulseAudioFile);
             phPulseAudioFile->openFile(sPulseAudioFilePath, CAudioFileIf::kFileRead);
             if (!phPulseAudioFile->isOpen())
@@ -80,7 +80,7 @@ SUITE(PPM)
             }
             phPulseAudioFile->getFileSpec(sPulseAudioFileSpec);
             
-            sPulsePPMAudioFilePath = "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Pulse_PPM.wav" ;
+            sPulsePPMAudioFilePath = "Pulse_PPM.wav" ;
             CAudioFileIf::create(phPulsePPMAudioFile);
             phPulsePPMAudioFile->openFile(sPulsePPMAudioFilePath, CAudioFileIf::kFileRead);
             if (!phPulsePPMAudioFile->isOpen())
@@ -89,7 +89,7 @@ SUITE(PPM)
             }
             phPulsePPMAudioFile->getFileSpec(sPulsePPMAudioFileSpec);
             
-            sSinAudioFilePath = "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Sin.wav" ;
+            sSinAudioFilePath = "Sin.wav" ;
             CAudioFileIf::create(phSinAudioFile);
             phSinAudioFile->openFile(sSinAudioFilePath, CAudioFileIf::kFileRead);
             if (!phSinAudioFile->isOpen())
@@ -98,7 +98,7 @@ SUITE(PPM)
             }
             phSinAudioFile->getFileSpec(sSinAudioFileSpec);
             
-            sSinPPMAudioFilePath= "/Users/Keshav/Documents/MUSIC-8903-2016/bin/debug/Sin_PPM.wav" ;
+            sSinPPMAudioFilePath= "Sin_PPM.wav" ;
             CAudioFileIf::create(phSinPPMAudioFile);
             phSinPPMAudioFile->openFile(sSinPPMAudioFilePath, CAudioFileIf::kFileRead);
             if (!phSinPPMAudioFile->isOpen())
