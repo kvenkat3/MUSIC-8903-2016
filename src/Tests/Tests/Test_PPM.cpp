@@ -148,7 +148,7 @@ SUITE(PPM)
         {
             
             
-            std::cout << "BLock length " << m_iBlockLength << "\n" << std::endl;
+            //std::cout << "BLock length " << m_iBlockLength << "\n" << std::endl;
             
             int iNumFramesRemaining = m_iDataLength;
             while (iNumFramesRemaining > 0)
@@ -307,13 +307,11 @@ SUITE(PPM)
             if (m_iBlockLength>m_iDataLength)
                 std::cout<< "Block length greater than Data Length \n" << std::endl;
             
-            std::cout << "BLock length " << m_iBlockLength << "\n" << std::endl;
             
             m_pPPM->initInstance( m_fSampleRate,  m_iNumChannels, .01, .01);
             
             for (int c = 0; c < m_iNumChannels; c++)
             {
-                // CVectorFloat::setZero(m_ppfInputData[c], m_iDataLength);
                 CVectorFloat::setZero(m_ppfOutputData[c], m_iDataLength);
             }
             
@@ -326,16 +324,85 @@ SUITE(PPM)
                 {
                     
                     CHECK_CLOSE(m_ppfMatlabData[c][i], m_ppfOutputData[c][i], 1e-3F);
-                    std::cout<< "Matlab "<< m_ppfMatlabData[c][i] << " " << "C++ : " << m_ppfOutputData[c][i] << "\n" <<std::endl;
                     
                 }
             }
-            std::cout<< "ITeration THRU \n " << std::endl;
         }
         
         delete [] blockSizes;
         
     }
+    TEST_FIXTURE(PPMData, SinWaveTest)
+    {
+        //Run sin wave to determine if algo can evaluate recurring peaks and troughs
+        
+        m_fSampleRate = 2000;
+        m_iNumChannels =1;
+        m_iDataLength = 100;
+        long long iFrames = m_iDataLength;
+        phSinAudioFile->readData(m_ppfInputData, iFrames);
+        phSinPPMAudioFile->readData(m_ppfMatlabData, iFrames);
+        
+            m_iBlockLength = 10;
+            if (m_iBlockLength>m_iDataLength)
+                std::cout<< "Block length greater than Data Length \n" << std::endl;
+            
+        
+            m_pPPM->initInstance( m_fSampleRate,  m_iNumChannels, .01, .01);
+            
+            for (int c = 0; c < m_iNumChannels; c++)
+            {
+                CVectorFloat::setZero(m_ppfOutputData[c], m_iDataLength);
+            }
+            
+            TestProcess();
+            
+            for (int i = 0; i < m_iDataLength ; i++)
+            {
+                
+                for (int c= 0; c<m_iNumChannels; c++)
+                {
+                    
+                    CHECK_CLOSE(m_ppfMatlabData[c][i], m_ppfOutputData[c][i], 1e-3F);
+                    
+                }
+            }
+        }
+    
+    TEST_FIXTURE(PPMData, MaxPPMTest)
+    {
+        //Find max PPM value in the entire channel
+        
+        m_fSampleRate = 2000;
+        m_iNumChannels =1;
+        m_iDataLength = 100;
+        long long iFrames = m_iDataLength;
+        phSinAudioFile->readData(m_ppfInputData, iFrames);
+        phSinPPMAudioFile->readData(m_ppfMatlabData, iFrames);
+        
+        m_iBlockLength = 10;
+        if (m_iBlockLength>m_iDataLength)
+            std::cout<< "Block length greater than Data Length \n" << std::endl;
+        m_pPPM->initInstance( m_fSampleRate,  m_iNumChannels, .01, .01);
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+        {
+            CVectorFloat::setZero(m_ppfOutputData[c], m_iDataLength);
+        }
+        
+        TestProcess();
+        
+        float max=m_pPPM->getPPMChannelValue(0);
+      
+                
+                CHECK_CLOSE(0.8415, max, 1e-3F);
+                //max ppm value compared with value calculated in MATLAB
+                
+        
+        
+    }
+    
+    
     
     
     

@@ -127,10 +127,7 @@ Error_t CPPM::initInstance(float fSampleRateInHz, int iNumChannels, float attack
 
 Error_t CPPM::resetInstance()
 {
-    for (int c = 0; c < m_iNumChannels; c++)
-    {
-        m_pfTempBuffer[c] = 0;
-    }
+ 
     
     return kNoError;
 }
