@@ -30,7 +30,9 @@ public:
     
     Error_t process(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
    
-    void setDelayTime(int time);
+    Error_t initInstance(float fSampleRateInHz, int iNumChannels, float fThreshold, float seconds);
+
+    void setDelayTime(float time);
     
 protected:
     COnsetTrigger();

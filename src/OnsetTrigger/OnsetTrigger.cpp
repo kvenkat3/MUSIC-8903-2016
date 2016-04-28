@@ -75,9 +75,19 @@ float COnsetTrigger::getThreshold()
     
 }
 
-void COnsetTrigger::setDelayTime(int seconds)
+void COnsetTrigger::setDelayTime(float seconds)
 {
-    m_iDelayInSamples = m_fSampleRate*seconds;
+    m_iDelayInSamples = (int)(m_fSampleRate*seconds);
+}
+
+Error_t COnsetTrigger::initInstance(float fSampleRate, int iNumChannels, float fThreshold, float seconds)
+{
+    
+    COnsetTrigger::setThreshold(fThreshold);
+    m_iNumChannels = iNumChannels;
+    m_fSampleRate = fSampleRate;
+    COnsetTrigger::setDelayTime(seconds);
+    
 }
 
 Error_t COnsetTrigger::process(float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames)
