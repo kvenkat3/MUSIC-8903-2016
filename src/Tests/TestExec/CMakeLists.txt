@@ -8,6 +8,7 @@ set (FastConvLIB FastConv)
 set (AudioLIB AudioFileIO)
 set (SndLIB sndlib)
 set (PPMLIB PPM)
+set (OnsetLIB OnsetTrigger)
 
 ##############################################################
 ## unitTest++
@@ -60,7 +61,7 @@ if (WITH_TESTS)
     add_executable(${APP} ${${APP}_SOURCES} ${${APP}_HEADERS} ${${APP}_SOURCES_TEST} ${${APP}_HEADERS_TEST})
 
     # link the libraries
-target_link_libraries(${APP} ${LIB} ${TestLIB} ${FilterLIB} ${FastConvLIB} ${DtwLIB} ${AudioLIB} ${SndLIB} ${OS_LIBS} ${PPMLIB})
+target_link_libraries(${APP} ${LIB} ${TestLIB} ${FilterLIB} ${FastConvLIB} ${DtwLIB} ${AudioLIB} ${SndLIB} ${OS_LIBS} ${PPMLIB} ${OnsetLIB} ) 
 endif (WITH_TESTS)
 
 
